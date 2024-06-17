@@ -12,7 +12,6 @@ class CardSelectionArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HoneymoonBridgeGameProvider>(
         builder: (context, model, child) {
-
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -23,9 +22,9 @@ class CardSelectionArea extends StatelessWidget {
           SelectionCardList(
             player: model.turn.currentPlayer,
             cards: model.selectionCards,
-            onPlayCard: (CardModel card) async {
+            selected: model.turn.actionCount > 0,
+            onSelected: (CardModel card) async {
               await model.selectCard(model.turn.currentPlayer, card);
-              await model.endTurn();
             },
           ),
         ],

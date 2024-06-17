@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 
 enum Suit {
-  NT,
-  Spades,
-  Hearts,
   Clubs,
-  Diamonds
+  Diamonds,
+  Hearts,
+  Spades,
+  NT,
 }
 
 class CardModel {
@@ -107,7 +107,7 @@ class CardModel {
     }
   }
 
-  static Color suitToColor(Suit suit) {
+  static Color suitToColor(Suit? suit) {
     switch (suit) {
       case Suit.Hearts:
       case Suit.Diamonds:

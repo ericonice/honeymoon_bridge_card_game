@@ -19,7 +19,7 @@ class BidModel {
     if (pass == true) return "Pass";
     if (double == true) return "Double";
 
-    return "$bidNumber${suit.toString()}";
+    return "$bidNumber${CardModel.suitToUnicode(suit!)}";
 
   }
 }

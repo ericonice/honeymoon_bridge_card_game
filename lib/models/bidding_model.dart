@@ -42,7 +42,7 @@ List<(BidModel?, BidModel?)> getBidRounds() {
   {
     var bidNumbers = [1,2,3,4,5,6,7];
 
-    var lastBid = bids.firstWhereOrNull((b) => b.bidNumber != null);
+    var lastBid = bids.lastWhereOrNull((b) => b.bidNumber != null);
 
     if (lastBid == null)
     {
@@ -53,16 +53,20 @@ List<(BidModel?, BidModel?)> getBidRounds() {
     return bidNumbers.where((n) => n >= lastBidNumber).toList();
   }
 
-  List<Suit> getAvailableSuits(int bidNumber)
+  List<Suit> getAvailableSuits(int? bidNumber)
   {
-    var lastBid = bids.firstWhereOrNull((b) => b.bidNumber != null);
+    if (bidNumber == null)
+    {
+      return [];
+    }
+    var lastBid = bids.lastWhereOrNull((b) => b.bidNumber != null);
 
     if (lastBid == null || bidNumber > lastBid.bidNumber!)
     {
       return Suit.values;
     }
 
-    return Suit.values.where((s) => s.index < lastBid.suit!.index).toList();
+    return Suit.values.where((s) => s.index > lastBid.suit!.index).toList();
   }
 
   PlayerModel get otherPlayer {

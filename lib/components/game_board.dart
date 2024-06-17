@@ -18,19 +18,13 @@ class GameBoard extends StatelessWidget {
           ? Column(
               children: [
                 PlayerInfo(turn: model.turn),
+                PlayerCardList(
+                  player: model.players[1],
+                ),
+                const Expanded(child: PlayingArea()),
                 Expanded(
                   child: Stack(
                     children: [
-                      const Align(
-                        alignment: Alignment.center,
-                        child: PlayingArea(),
-                      ),
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: PlayerCardList(
-                          player: model.players[1],
-                        ),
-                      ),
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Column(

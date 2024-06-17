@@ -60,12 +60,7 @@ abstract class GameProvider with ChangeNotifier {
     _discards = [];
     _turn = Turn(players: players, currentPlayer: players.first);
     _bidding =
-        BiddingModel(players: players, currentPlayer: players.first, bids: [
-      BidModel(pass: true),
-      BidModel(double: true),
-      BidModel(pass: true),
-      BidModel(pass: true),
-    ]);
+        BiddingModel(players: players, currentPlayer: players.first, bids: []);
     setupBoard();
 
     notifyListeners();
@@ -84,6 +79,16 @@ abstract class GameProvider with ChangeNotifier {
 
   void setBottomWidget(Widget? widget) {
     bottomWidget = widget;
+    notifyListeners();
+  }
+
+  void bid(BidModel bid) {
+    if (_bidding == null)
+    {
+      return;
+    }
+
+    _bidding!.bid(bid);    
     notifyListeners();
   }
 
@@ -188,20 +193,24 @@ abstract class GameProvider with ChangeNotifier {
     return discards.length >= count;
   }
 
-  selectCard(PlayerModel player, CardModel card) {
+  Future<void> selectCard(PlayerModel player, CardModel card) async {
     var phase = gameState[GS_PHASE];
 
     if (phase != HoneymoonPhase.selection) {
       return;
     }
 
-    if (_turn.actionCount != 0) {
+    if (_turn.actionCount > 1) {
+      return;
+    }
+
+    if (_turn.actionCount == 1) {
+      await endTurn();
       return;
     }
 
     // give them to player
     _turn.actionCount += 1;
-    _selectionCards = [];
     player.addCards([card]);
 
     notifyListeners();
@@ -243,15 +252,17 @@ abstract class GameProvider with ChangeNotifier {
   Future<void> endTurn() async {
     _turn.nextTurn();
 
+    var phase = gameState[GS_PHASE];
+    switch (phase) {
+      case HoneymoonPhase.selection:
+        _selectionCards = [];
+        await drawSelectionCards();
+    }
+
     if (_turn.currentPlayer.isBot) {
       botTurn();
     }
 
-    var phase = gameState[GS_PHASE];
-    switch (phase) {
-      case HoneymoonPhase.selection:
-        await drawSelectionCards();
-    }
     notifyListeners();
   }
 

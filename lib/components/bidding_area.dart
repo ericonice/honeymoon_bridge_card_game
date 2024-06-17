@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:honeymoon_bridge_game/components/deck_pile.dart';
-import 'package:honeymoon_bridge_game/components/selection_card_list.dart';
+import 'package:honeymoon_bridge_game/models/bid.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/providers/honeymoon_bridge_game_provider.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +12,9 @@ class BiddingArea extends StatefulWidget {
 }
 
 class _BiddingAreaState extends State<BiddingArea> {
+  int? _bidNumber;
+  Suit? _suit;
+
   @override
   Widget build(BuildContext context) {
     return Consumer<HoneymoonBridgeGameProvider>(
@@ -46,13 +48,15 @@ class _BiddingAreaState extends State<BiddingArea> {
                     .getBidRounds()
                     .map((round) => Row(
                           children: [
-                            Text(
-                              round.$1.toString(),
-                            ),
+                            Text(round.$1.toString(),
+                                style: TextStyle(
+                                  color: CardModel.suitToColor(round.$1?.suit),
+                                )),
                             const SizedBox(width: 10),
-                            Text(
-                              round.$2.toString(),
-                            ),
+                            Text(round.$2 == null ? "" : round.$2.toString(),
+                                style: TextStyle(
+                                  color: CardModel.suitToColor(round.$2?.suit),
+                                )),
                           ],
                         ))
                     .toList(),
@@ -65,16 +69,33 @@ class _BiddingAreaState extends State<BiddingArea> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(4),
-                  child: ElevatedButton(onPressed: () {}, child: const Text("PASS")),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _bidNumber = null;
+                        });
+                        model.bid(BidModel(pass: true));
+                      },
+                      child: const Text("PASS")),
                 ),
-                ...model.bidding!
-                    .getAvailableBidNumbers()
-                    .map((bidNumber) => Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text(bidNumber.toString())),
-                        )),
+                SegmentedButton<int>(
+                  emptySelectionAllowed: true,
+                  segments: model.bidding!
+                      .getAvailableBidNumbers()
+                      .map((bidNumber) => ButtonSegment<int>(
+                            value: bidNumber,
+                            label: Text(bidNumber.toString()),
+                          ))
+                      .toList(),
+                  selected: {
+                    ...?(_bidNumber != null ? [_bidNumber!] : null)
+                  },
+                  onSelectionChanged: (Set<int> newSelection) {
+                    setState(() {
+                      _bidNumber = newSelection.first;
+                    });
+                  },
+                ),
               ],
             ),
           ),
@@ -84,16 +105,40 @@ class _BiddingAreaState extends State<BiddingArea> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(4),
-                  child: ElevatedButton(onPressed: () {}, child: const Text("DOUBLE")),
+                  child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _bidNumber = null;
+                        });
+                        model.bid(BidModel(double: true));
+                      },
+                      child: const Text("DOUBLE")),
                 ),
-                ...model.bidding!
-                    .getAvailableBidNumbers()
-                    .map((bidNumber) => Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text(bidNumber.toString())),
-                        )),
+                _bidNumber == null
+                    ? const Spacer()
+                    : SegmentedButton<Suit>(
+                        emptySelectionAllowed: true,
+                        segments: model.bidding!
+                            .getAvailableSuits(_bidNumber)
+                            .map((suit) => ButtonSegment<Suit>(
+                                  value: suit,
+                                  label: Text(CardModel.suitToUnicode(suit),
+                                      style: TextStyle(
+                                        color: CardModel.suitToColor(suit),
+                                      )),
+                                ))
+                            .toList(),
+                        selected: {
+                          ...?(_suit != null ? [_suit!] : null)
+                        },
+                        onSelectionChanged: (Set<Suit> newSelection) {
+                          model.bid(BidModel(
+                              suit: newSelection.first, bidNumber: _bidNumber));
+                          setState(() {
+                            _bidNumber = null;
+                          });
+                        },
+                      ),
               ],
             ),
           ),
