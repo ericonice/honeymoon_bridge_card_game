@@ -22,10 +22,27 @@ class BiddingModel {
     return bids.length < 2 || bids.last.pass != true;
   }
   
+  bool canDouble()
+  {
+    return bids.lastOrNull?.pass == false;
+  }
+
   void bid(BidModel bid) {
     index += 1;
     currentPlayer = index % 2 == 0 ? players[0] : players[1];
     bids.add(bid);
+  }
+
+  bool done() {
+    if (bids.length < 2)
+    {
+      return false;
+    }
+
+    BidModel lastBid = bids[bids.length - 1];
+    BidModel secondLastBid = bids[bids.length - 2];
+    
+    return lastBid.pass == true && secondLastBid.pass == true;
   }
 
 List<(BidModel?, BidModel?)> getBidRounds() {

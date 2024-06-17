@@ -1,4 +1,5 @@
 import 'package:honeymoon_bridge_game/constants.dart';
+import 'package:honeymoon_bridge_game/models/bid.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/providers/game_provider.dart';
 
@@ -16,16 +17,29 @@ class HoneymoonBridgeGameProvider extends GameProvider {
   Future<void> setupBoard() async {
     turn.drawCount = 0;
     turn.actionCount = 0;
-    gameState[GS_PHASE] = HoneymoonPhase.bidding;
+    gameState[GS_PHASE] = HoneymoonPhase.selection;
     
     await drawSelectionCards(); 
  }
+
+  bool get canBid {
+    if (turn.currentPlayer.isBot) return false;
+
+    var phase = gameState[GS_PHASE];
+    switch (phase) {
+      case HoneymoonPhase.bidding:
+        return turn.actionCount == 0;
+      default:
+        return false;
+    }
+  }
 
   @override
   bool get canEndTurn {
     var phase = gameState[GS_PHASE];
     switch (phase) {
       case HoneymoonPhase.selection:
+      case HoneymoonPhase.bidding:
         return turn.actionCount > 0;
       default:
         return false;
@@ -94,7 +108,14 @@ class HoneymoonBridgeGameProvider extends GameProvider {
             gameState[GS_PHASE] = HoneymoonPhase.bidding;
           }
         }
+
+      case HoneymoonPhase.bidding:
+        {
+          // Bot kind of dumb, only Passes
+          bid(BidModel(pass: true));
+        }
     }
+    
     // for (final c in p.cards) {
     //   if (canPlayCard(c)) {
     //     await playCard(player: p, card: c);

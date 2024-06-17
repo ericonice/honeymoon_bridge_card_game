@@ -82,13 +82,23 @@ abstract class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void bid(BidModel bid) {
+  Future<void> bid(BidModel bid) async {
     if (_bidding == null)
     {
       return;
     }
 
     _bidding!.bid(bid);    
+    _turn.actionCount++;
+
+    // If the last two bids are passed, then time to move on to the next phast
+    if (bidding!.done())
+    {
+      gameState[GS_PHASE] = HoneymoonPhase.play;
+    }
+
+    await endTurn();
+
     notifyListeners();
   }
 

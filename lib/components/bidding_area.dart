@@ -63,57 +63,71 @@ class _BiddingAreaState extends State<BiddingArea> {
               ),
             ),
           ),
+          !model.canBid
+              ? const Spacer()
+              : Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _bidNumber = null;
+                              });
+                              model.bid(BidModel(pass: true));
+                            },
+                            child: const Text("PASS")),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Visibility(
+                          visible: model.bidding!.canDouble(),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _bidNumber = null;
+                                });
+                                model.bid(BidModel(double: true));
+                              },
+                              child: const Text("DOUBLE")),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+          !model.canBid
+              ? const Spacer()
+              : Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      SegmentedButton<int>(
+                        emptySelectionAllowed: true,
+                        segments: model.bidding!
+                            .getAvailableBidNumbers()
+                            .map((bidNumber) => ButtonSegment<int>(
+                                  value: bidNumber,
+                                  label: Text(bidNumber.toString()),
+                                ))
+                            .toList(),
+                        selected: {
+                          ...?(_bidNumber != null ? [_bidNumber!] : null)
+                        },
+                        onSelectionChanged: (Set<int> newSelection) {
+                          setState(() {
+                            _bidNumber = newSelection.first;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _bidNumber = null;
-                        });
-                        model.bid(BidModel(pass: true));
-                      },
-                      child: const Text("PASS")),
-                ),
-                SegmentedButton<int>(
-                  emptySelectionAllowed: true,
-                  segments: model.bidding!
-                      .getAvailableBidNumbers()
-                      .map((bidNumber) => ButtonSegment<int>(
-                            value: bidNumber,
-                            label: Text(bidNumber.toString()),
-                          ))
-                      .toList(),
-                  selected: {
-                    ...?(_bidNumber != null ? [_bidNumber!] : null)
-                  },
-                  onSelectionChanged: (Set<int> newSelection) {
-                    setState(() {
-                      _bidNumber = newSelection.first;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _bidNumber = null;
-                        });
-                        model.bid(BidModel(double: true));
-                      },
-                      child: const Text("DOUBLE")),
-                ),
                 _bidNumber == null
                     ? const Spacer()
                     : SegmentedButton<Suit>(
