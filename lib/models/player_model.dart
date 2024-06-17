@@ -4,11 +4,13 @@ class PlayerModel {
   final String name;
   final bool isHuman;
   List<CardModel> cards;
+  List<CardModel> tricks;
   int score;
 
   PlayerModel({
     required this.name,
     this.cards = const [],
+    this.tricks = const [],
     this.isHuman = false,
     this.score = 0,
   });

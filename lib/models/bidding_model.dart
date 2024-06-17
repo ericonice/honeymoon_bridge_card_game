@@ -27,9 +27,18 @@ class BiddingModel {
     return bids.lastOrNull?.pass == false;
   }
 
-  void bid(BidModel bid) {
+  BidModel? contract()
+  {
+    if (bids.isEmpty)
+    {
+      return null;
+    }
+
+    return bids.lastWhereOrNull((b) => b.bidNumber != null);
+  }
+
+  void bid(PlayerModel player,BidModel bid) {
     index += 1;
-    currentPlayer = index % 2 == 0 ? players[0] : players[1];
     bids.add(bid);
   }
 
@@ -38,11 +47,8 @@ class BiddingModel {
     {
       return false;
     }
-
-    BidModel lastBid = bids[bids.length - 1];
-    BidModel secondLastBid = bids[bids.length - 2];
     
-    return lastBid.pass == true && secondLastBid.pass == true;
+    return bids.last.pass == true;
   }
 
 List<(BidModel?, BidModel?)> getBidRounds() {

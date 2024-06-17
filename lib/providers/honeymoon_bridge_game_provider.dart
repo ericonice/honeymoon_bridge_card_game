@@ -1,5 +1,6 @@
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/bid.dart';
+import 'package:honeymoon_bridge_game/models/bidding_model.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/providers/game_provider.dart';
 
@@ -18,8 +19,13 @@ class HoneymoonBridgeGameProvider extends GameProvider {
     turn.drawCount = 0;
     turn.actionCount = 0;
     gameState[GS_PHASE] = HoneymoonPhase.selection;
-    
     await drawSelectionCards(); 
+
+    // temporary
+    // gameState[GS_PHASE] = HoneymoonPhase.play;
+    // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
+    // await drawCards(players[0], count: 13, allowAnyTime: true);
+    // await drawCards(players[1], count: 13, allowAnyTime: true);    
  }
 
   bool get canBid {
@@ -112,7 +118,7 @@ class HoneymoonBridgeGameProvider extends GameProvider {
       case HoneymoonPhase.bidding:
         {
           // Bot kind of dumb, only Passes
-          bid(BidModel(pass: true));
+          bid(BidModel(players[1], pass: true));
         }
     }
     

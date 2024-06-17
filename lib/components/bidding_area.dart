@@ -76,7 +76,8 @@ class _BiddingAreaState extends State<BiddingArea> {
                               setState(() {
                                 _bidNumber = null;
                               });
-                              model.bid(BidModel(pass: true));
+                              model.bid(BidModel(model.turn.currentPlayer,
+                                  pass: true));
                             },
                             child: const Text("PASS")),
                       ),
@@ -89,7 +90,8 @@ class _BiddingAreaState extends State<BiddingArea> {
                                 setState(() {
                                   _bidNumber = null;
                                 });
-                                model.bid(BidModel(double: true));
+                                model.bid(BidModel(model.turn.currentPlayer,
+                                    double: true));
                               },
                               child: const Text("DOUBLE")),
                         ),
@@ -146,7 +148,7 @@ class _BiddingAreaState extends State<BiddingArea> {
                           ...?(_suit != null ? [_suit!] : null)
                         },
                         onSelectionChanged: (Set<Suit> newSelection) {
-                          model.bid(BidModel(
+                          model.bid(BidModel(model.turn.currentPlayer,
                               suit: newSelection.first, bidNumber: _bidNumber));
                           setState(() {
                             _bidNumber = null;

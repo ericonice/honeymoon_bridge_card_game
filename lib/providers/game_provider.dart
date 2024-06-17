@@ -88,7 +88,7 @@ abstract class GameProvider with ChangeNotifier {
       return;
     }
 
-    _bidding!.bid(bid);    
+    _bidding!.bid(_turn.currentPlayer, bid);    
     _turn.actionCount++;
 
     // If the last two bids are passed, then time to move on to the next phast
