@@ -7,7 +7,7 @@ import 'package:honeymoon_bridge_game/models/player_model.dart';
 class SelectionCardList extends StatelessWidget {
   final PlayerModel player;
   final List<CardModel> cards;
-  final bool selected;
+  final CardModel? selectedCard;
   final double size;
   final Function(CardModel)? onSelected;
 
@@ -15,7 +15,7 @@ class SelectionCardList extends StatelessWidget {
     super.key,
     required this.player,
     required this.cards,
-    required this.selected,
+    required this.selectedCard,
     this.size = 1,
     this.onSelected,
   });
@@ -31,11 +31,18 @@ class SelectionCardList extends StatelessWidget {
           itemCount: cards.length,
           itemBuilder: (context, index) {
             final card = cards[index];
-            return PlayingCard(
-              card: card,
-              size: size,
-              visible: index == 0 || selected,
-              onPlayCard: onSelected,
+            return Container(
+              decoration: BoxDecoration(
+                border: selectedCard == card
+                    ? Border.all(color: Colors.yellow, width: 3)
+                    : null, // Apply border only if selected
+              ),
+              child: PlayingCard(
+                card: card,
+                size: size,
+                visible: player.isHuman && (index == 0 || selectedCard != null),
+                onPlayCard: onSelected,
+              ),
             );
           },
         ),

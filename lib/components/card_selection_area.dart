@@ -22,7 +22,7 @@ class CardSelectionArea extends StatelessWidget {
           SelectionCardList(
             player: model.turn.currentPlayer,
             cards: model.selectionCards,
-            selected: model.turn.actionCount > 0,
+            selectedCard: model.turn.selectedCard,
             onSelected: (CardModel card) async {
               await model.selectCard(model.turn.currentPlayer, card);
             },

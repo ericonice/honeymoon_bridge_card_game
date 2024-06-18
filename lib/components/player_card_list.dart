@@ -30,7 +30,7 @@ class PlayerCardList extends StatelessWidget {
             card: card,
             size: size,
             // visible: player.isHuman,
-            visible: true,
+            visible: player.isHuman,
             onPlayCard: onPlayCard,
           );
         },

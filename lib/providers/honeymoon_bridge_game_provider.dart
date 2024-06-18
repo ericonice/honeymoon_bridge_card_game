@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/main.dart';
 import 'package:honeymoon_bridge_game/models/bid_model.dart';
 import 'package:honeymoon_bridge_game/models/bidding_model.dart';
@@ -18,7 +19,6 @@ enum HoneymoonPhase {
 }
 
 class HoneymoonBridgeGameProvider with ChangeNotifier {
-
   HoneymoonBridgeGameProvider() {
     _service = DeckService();
   }
@@ -187,20 +187,18 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
       return;
     }
 
-    if (_turn.actionCount > 1) {
-      return;
-    }
-
-    if (_turn.actionCount == 1) {
-      await endTurn();
+    if (_turn.actionCount >= 1) {
       return;
     }
 
     // give them to player
     _turn.actionCount += 1;
+    _turn.selectedCard = card;
     player.addCards([card]);
-
     notifyListeners();
+
+    await Future.delayed(defaultDelay);
+    await endTurn();
   }
 
   void drawCardsFromDiscard(PlayerModel player, {int count = 1}) {
@@ -227,7 +225,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   Future<void> applyCardSideEffects(CardModel card) async {}
 
   Future<void> endTurn() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(defaultDelay);
 
     var phase = gameState[gsPhase];
     switch (phase) {
@@ -268,7 +266,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
           }
 
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 2000));
+          await Future.delayed(defaultDelay);
 
           // winner starts the next turn
           _turn.nextTurn(player: winner);
@@ -309,15 +307,15 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     turn.drawCount = 0;
     turn.actionCount = 0;
     gameState[gsPhase] = HoneymoonPhase.selection;
-    await drawSelectionCards(); 
+    await drawSelectionCards();
 
     //temporary
     // gameState[GS_PHASE] = HoneymoonPhase.play;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
     // await drawCards(players[0], count: 13, allowAnyTime: true);
-    // await drawCards(players[1], count: 13, allowAnyTime: true);    
+    // await drawCards(players[1], count: 13, allowAnyTime: true);
     // await endTurn();
- }
+  }
 
   bool get canBid {
     if (turn.currentPlayer.isBot) return false;
@@ -347,8 +345,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     if (gameIsOver) return false;
     var phase = gameState[gsPhase];
 
-    switch (phase)
-    {
+    switch (phase) {
       case HoneymoonPhase.selection:
       case HoneymoonPhase.bidding:
         return false;
@@ -356,7 +353,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
         return _turn.actionCount < 1 && _turn.currentPlayer == player;
       default:
         return false;
-
     }
   }
 
@@ -378,17 +374,17 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
   Future<void> botTurn() async {
     final phase = gameState[gsPhase];
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(defaultDelay);
     var bot = players[1];
 
     switch (phase) {
       case HoneymoonPhase.selection:
         {
-          var card = (selectionCards.first.rank >= 11) ? selectionCards[0] : selectionCards[1];
+          var card = (selectionCards.first.rank >= 11)
+              ? selectionCards[0]
+              : selectionCards[1];
           selectCard(turn.currentPlayer, card);
-          await endTurn();
-          if (currentDeck!.remaining == 0)
-          {
+          if (currentDeck!.remaining == 0) {
             gameState[gsPhase] = HoneymoonPhase.bidding;
           }
         }
@@ -403,8 +399,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
         {
           // Determine if a card has already been played
           CardModel? cardToPlay;
-          if (otherPlayer.playedCard != null)
-          {
+          if (otherPlayer.playedCard != null) {
             // Play consists of the following strategy (which is very, very unsophisticated):
             // 1. If have any cards of the suit that was played, then:
             //    Play the least card tha can beat the played card or lowest card if unable
@@ -417,27 +412,25 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
             // get possible cards of same suit, which will be ordered in descending order
             var possibleCards = bot.cards.where((c) => c.suit == suitPlayed);
-            if (possibleCards.isNotEmpty)
-            {
+            if (possibleCards.isNotEmpty) {
               // Handle 1
               cardToPlay = possibleCards.lastWhereOrNull((c) => c.rank > rank);
               cardToPlay ??= possibleCards.firstWhere((c) => c.rank < rank);
-            }
-            else if (suitContract != Suit.NT)
-            {
+            } else if (suitContract != Suit.NT) {
               // Handle 2
-              cardToPlay = bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
+              cardToPlay =
+                  bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
 
               // Handle 3
-              cardToPlay ??= players[1].cards.reduce((a, b) => a.rank < b.rank ? a : b);
-            } 
-          } 
-          else
-          {
+              cardToPlay ??=
+                  players[1].cards.reduce((a, b) => a.rank < b.rank ? a : b);
+            }
+          } else {
             // Bot kind of dumb, plays highest card
-            cardToPlay = players[1].cards.reduce((a, b) => a.rank > b.rank ? a : b);
+            cardToPlay =
+                players[1].cards.reduce((a, b) => a.rank > b.rank ? a : b);
           }
-          
+
           playCard(player: bot, card: cardToPlay!);
           await endTurn();
         }
