@@ -1,7 +1,8 @@
+import 'package:collection/collection.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/bid.dart';
-import 'package:honeymoon_bridge_game/models/bidding_model.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
+import 'package:honeymoon_bridge_game/models/player_model.dart';
 import 'package:honeymoon_bridge_game/providers/game_provider.dart';
 
 const GS_PHASE = 'GS_PHASE';
@@ -21,11 +22,12 @@ class HoneymoonBridgeGameProvider extends GameProvider {
     gameState[GS_PHASE] = HoneymoonPhase.selection;
     await drawSelectionCards(); 
 
-    // temporary
+    //temporary
     // gameState[GS_PHASE] = HoneymoonPhase.play;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
     // await drawCards(players[0], count: 13, allowAnyTime: true);
     // await drawCards(players[1], count: 13, allowAnyTime: true);    
+    // await endTurn();
  }
 
   bool get canBid {
@@ -46,6 +48,7 @@ class HoneymoonBridgeGameProvider extends GameProvider {
     switch (phase) {
       case HoneymoonPhase.selection:
       case HoneymoonPhase.bidding:
+      case HoneymoonPhase.play:
         return turn.actionCount > 0;
       default:
         return false;
@@ -53,31 +56,20 @@ class HoneymoonBridgeGameProvider extends GameProvider {
   }
 
   @override
-  bool canPlayCard(CardModel card) {
-    bool canPlay = false;
+  bool canPlayCard(PlayerModel player, CardModel card) {
     var phase = gameState[GS_PHASE];
 
-    if (phase == HoneymoonPhase.selection) {
-      return false;
-    }
+    switch (phase)
+    {
+      case HoneymoonPhase.selection:
+      case HoneymoonPhase.bidding:
+        return false;
+      case HoneymoonPhase.play:
+        return turn.actionCount == 0;
+      default:
+        return false;
 
-    if (gameState[GS_LAST_SUIT] == null || gameState[GS_LAST_VALUE] == null) {
-      return false;
     }
-
-    if (gameState[GS_LAST_SUIT] == card.suit) {
-      canPlay = true;
-    }
-
-    if (gameState[GS_LAST_VALUE] == card.value) {
-      canPlay = true;
-    }
-
-    if (card.value == "8") {
-      canPlay = true;
-    }
-
-    return canPlay;
   }
 
   @override
@@ -102,11 +94,12 @@ class HoneymoonBridgeGameProvider extends GameProvider {
   Future<void> botTurn() async {
     final phase = gameState[GS_PHASE];
     await Future.delayed(const Duration(milliseconds: 500));
+    var bot = players[1];
 
     switch (phase) {
       case HoneymoonPhase.selection:
         {
-          var card = (selectionCards.first.getNumericValue() >= 11) ? selectionCards[0] : selectionCards[1];
+          var card = (selectionCards.first.rank >= 11) ? selectionCards[0] : selectionCards[1];
           selectCard(turn.currentPlayer, card);
           await endTurn();
           if (currentDeck!.remaining == 0)
@@ -118,7 +111,50 @@ class HoneymoonBridgeGameProvider extends GameProvider {
       case HoneymoonPhase.bidding:
         {
           // Bot kind of dumb, only Passes
-          bid(BidModel(players[1], pass: true));
+          bid(BidModel(bot, pass: true));
+        }
+
+      case HoneymoonPhase.play:
+        {
+          // Determine if a card has already been played
+          CardModel? cardToPlay;
+          if (otherPlayer.playedCard != null)
+          {
+            // Play consists of the following strategy (which is very, very unsophisticated):
+            // 1. If have any cards of the suit that was played, then:
+            //    Play the least card tha can beat the played card or lowest card if unable
+            //    to beat the played card.
+            // 2. Otherwise play the lowest trump, if any
+            // 3. Otherwise, play the lowest card
+            var suitPlayed = otherPlayer.playedCard!.suit;
+            var rank = otherPlayer.playedCard!.rank;
+            var suitContract = bidding!.contract()!.suit!;
+
+            // get possible cards of same suit, which will be ordered in descending order
+            var possibleCards = bot.cards.where((c) => c.suit == suitPlayed);
+            if (possibleCards.isNotEmpty)
+            {
+              // Handle 1
+              cardToPlay = possibleCards.lastWhereOrNull((c) => c.rank > rank);
+              cardToPlay ??= possibleCards.firstWhere((c) => c.rank < rank);
+            }
+            else if (suitContract != Suit.NT)
+            {
+              // Handle 2
+              cardToPlay = bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
+
+              // Handle 3
+              cardToPlay ??= players[1].cards.reduce((a, b) => a.rank < b.rank ? a : b);
+            } 
+          } 
+          else
+          {
+            // Bot kind of dumb, plays highest card
+            cardToPlay = players[1].cards.reduce((a, b) => a.rank > b.rank ? a : b);
+          }
+          
+          playCard(player: bot, card: cardToPlay!);
+          await endTurn();
         }
     }
     

@@ -4,13 +4,14 @@ class PlayerModel {
   final String name;
   final bool isHuman;
   List<CardModel> cards;
-  List<CardModel> tricks;
+  int tricks;
+  CardModel? playedCard;
   int score;
 
   PlayerModel({
     required this.name,
     this.cards = const [],
-    this.tricks = const [],
+    this.tricks = 0,
     this.isHuman = false,
     this.score = 0,
   });
@@ -20,7 +21,7 @@ class PlayerModel {
     cards.sort((a, b) {
       int suitCompare = a.suit.index.compareTo(b.suit.index);
       if (suitCompare == 0) {
-        return b.getNumericValue().compareTo(a.getNumericValue()); 
+        return b.rank.compareTo(a.rank); 
       }
       return suitCompare;
     });

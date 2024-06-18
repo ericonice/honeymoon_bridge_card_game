@@ -14,14 +14,18 @@ class CardModel {
   final String image;
   final Suit suit;
   final String value;
+  late int rank;
 
   CardModel({
     required this.image,
     required this.suit,
     required this.value,
-  });
+  })
+  {
+    rank = _getNumericValue();
+  }
 
-  int getNumericValue() {
+  int _getNumericValue() {
     switch (value) {
       case "2":
         return 2;

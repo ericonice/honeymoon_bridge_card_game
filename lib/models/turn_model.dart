@@ -15,9 +15,9 @@ class Turn {
     this.actionCount = 0,
   });
 
-  void nextTurn() {
+  void nextTurn({PlayerModel? player }) {
     index += 1;
-    currentPlayer = index % 2 == 0 ? players[0] : players[1];
+    currentPlayer = (player == null) ? index % 2 == 0 ? players[0] : players[1] : player;
     drawCount = 0;
     actionCount = 0;
   }

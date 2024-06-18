@@ -24,7 +24,7 @@ class SelectionCardList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: SizedBox(
-        height: CARD_HEIGHT * size,
+        height: cardHeight * size,
         width: double.infinity,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,

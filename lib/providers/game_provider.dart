@@ -82,18 +82,20 @@ abstract class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  PlayerModel get otherPlayer {
+    return players.firstWhere((p) => p != _turn.currentPlayer);
+  }
+
   Future<void> bid(BidModel bid) async {
-    if (_bidding == null)
-    {
+    if (_bidding == null) {
       return;
     }
 
-    _bidding!.bid(_turn.currentPlayer, bid);    
+    _bidding!.bid(_turn.currentPlayer, bid);
     _turn.actionCount++;
 
-    // If the last two bids are passed, then time to move on to the next phast
-    if (bidding!.done())
-    {
+    // If bidding is complete, move on to the next phase
+    if (bidding!.done()) {
       gameState[GS_PHASE] = HoneymoonPhase.play;
     }
 
@@ -168,31 +170,28 @@ abstract class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool canPlayCard(CardModel card) {
+  bool canPlayCard(PlayerModel player, CardModel card) {
     if (gameIsOver) return false;
-
-    return _turn.actionCount < 1;
+    return _turn.actionCount < 1 && _turn.currentPlayer == player;
   }
 
   Future<void> playCard({
     required PlayerModel player,
     required CardModel card,
   }) async {
-    if (!canPlayCard(card)) return;
+    if (!canPlayCard(player, card)) return;
 
     player.removeCard(card);
-
-    _discards.add(card);
-
+    player.playedCard = card;
     _turn.actionCount += 1;
 
-    setLastPlayed(card);
-
-    await applyCardSideEffects(card);
-
-    if (gameIsOver) {
-      finishGame();
+    if (player.isHuman) {
+      await endTurn();
     }
+
+    // if (gameIsOver) {
+    //   finishGame();
+    // }
 
     notifyListeners();
   }
@@ -260,13 +259,58 @@ abstract class GameProvider with ChangeNotifier {
   }
 
   Future<void> endTurn() async {
-    _turn.nextTurn();
+    await Future.delayed(const Duration(milliseconds: 500));
 
     var phase = gameState[GS_PHASE];
     switch (phase) {
       case HoneymoonPhase.selection:
+        _turn.nextTurn();
         _selectionCards = [];
         await drawSelectionCards();
+        notifyListeners();
+
+      case HoneymoonPhase.bidding:
+        _turn.nextTurn();
+        
+      case HoneymoonPhase.play:
+        // If both players played, determine the winner
+        if (players.every((p) => p.playedCard != null)) {
+          var suitContract = bidding!.contract();
+
+          // Winning card is:
+          // 1. The highest trump else
+          // 2. The highest card of the suit that was played first
+          var firstCardPlayed = _turn.otherPlayer.playedCard!;
+          var secondCardPlayed = _turn.currentPlayer.playedCard!;
+          PlayerModel winner;
+          if (firstCardPlayed.suit == secondCardPlayed.suit) {
+            winner = firstCardPlayed.rank > secondCardPlayed.rank
+                ? _turn.otherPlayer
+                : _turn.currentPlayer;
+          } else if (secondCardPlayed.suit == suitContract!.suit) {
+            winner = _turn.currentPlayer;
+          } else {
+            winner = _turn.otherPlayer;
+          }
+
+          winner.tricks++;
+
+          for (var p in players) {
+            p.playedCard = null;
+          }
+
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 2000));
+
+          // winner starts the next turn
+          _turn.nextTurn(player: winner);
+        } else if (_turn.currentPlayer.playedCard == null) {
+          // winnder of the bridge starts
+          _turn.nextTurn(player: _turn.otherPlayer);
+        } else {
+          // other player needs to play now
+          _turn.nextTurn(player: _turn.otherPlayer);
+        }
     }
 
     if (_turn.currentPlayer.isBot) {
@@ -300,7 +344,7 @@ abstract class GameProvider with ChangeNotifier {
     if (_turn.currentPlayer.cards.isNotEmpty) {
       await Future.delayed(const Duration(milliseconds: 1000));
 
-      playCard(
+      await playCard(
         player: _turn.currentPlayer,
         card: _turn.currentPlayer.cards.first,
       );

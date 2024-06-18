@@ -24,8 +24,8 @@ class PlayingCard extends StatelessWidget {
         if (onPlayCard != null) onPlayCard!(card);
       },
       child: Container(
-        width: CARD_WIDTH * size,
-        height: CARD_HEIGHT * size,
+        width: cardWidth * size,
+        height: cardHeight * size,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4.0),
         ),
@@ -33,8 +33,8 @@ class PlayingCard extends StatelessWidget {
         child: visible
             ? CachedNetworkImage(
                 imageUrl: card.image,
-                width: CARD_WIDTH * size,
-                height: CARD_HEIGHT * size,
+                width: cardWidth * size,
+                height: cardHeight * size,
               )
             : CardBack(size: size),
       ),

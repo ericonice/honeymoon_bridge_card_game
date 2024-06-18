@@ -126,10 +126,10 @@ class StatusArea extends StatelessWidget {
                 TableRow(
                   children: [
                     TableCell(
-                      child: Text(players[0].tricks.length.toString()),
+                      child: Text(players[0].tricks.toString()),
                     ),
                     TableCell(
-                      child: Text(players[1].tricks.length.toString()),
+                      child: Text(players[1].tricks.toString()),
                     ),
                   ],
                 ),

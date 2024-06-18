@@ -62,8 +62,8 @@ class GameBoard extends StatelessWidget {
                             ),
                             PlayerCardList(
                               player: model.players[0],
-                              onPlayCard: (CardModel card) {
-                                model.playCard(
+                              onPlayCard: (CardModel card) async {
+                                await model.playCard(
                                     player: model.players[0], card: card);
                               },
                             ),

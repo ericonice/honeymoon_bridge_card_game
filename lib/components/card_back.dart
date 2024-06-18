@@ -10,8 +10,8 @@ class CardBack extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: CARD_WIDTH * size,
-      height: CARD_HEIGHT * size,
+      width: cardWidth * size,
+      height: cardHeight * size,
       decoration: BoxDecoration(
         color: Colors.blueGrey,
         borderRadius: BorderRadius.circular(4.0),

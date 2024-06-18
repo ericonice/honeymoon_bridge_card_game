@@ -24,8 +24,8 @@ class DiscardPile extends StatelessWidget {
         }
       },
       child: Container(
-        width: CARD_WIDTH * size,
-        height: CARD_HEIGHT * size,
+        width: cardWidth * size,
+        height: cardHeight * size,
         decoration:
             BoxDecoration(border: Border.all(color: Colors.black45, width: 2)),
         child: IgnorePointer(

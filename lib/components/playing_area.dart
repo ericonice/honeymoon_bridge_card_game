@@ -19,7 +19,10 @@ class PlayingArea extends StatelessWidget {
         children: [
           Expanded(
             flex: 1,
-            child: StatusArea(players: model.players, contract: model.bidding!.contract(),),
+            child: StatusArea(
+              players: model.players,
+              contract: model.bidding!.contract(),
+            ),
           ),
           Expanded(
             flex: 3,
@@ -27,7 +30,7 @@ class PlayingArea extends StatelessWidget {
                 ? const CardSelectionArea()
                 : phase == HoneymoonPhase.bidding
                     ? const BiddingArea()
-                    : const TrickArea(),
+                    : TrickArea(players: model.players),
           ),
         ],
       );
