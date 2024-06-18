@@ -37,18 +37,6 @@ class GameBoard extends StatelessWidget {
                                   ? Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
-                                        ...model.additionalButtons
-                                            .map((button) => Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          right: 4),
-                                                  child: ElevatedButton(
-                                                      onPressed: button.enabled
-                                                          ? button.onPressed
-                                                          : null,
-                                                      child:
-                                                          Text(button.label)),
-                                                )),
                                         ElevatedButton(
                                             onPressed: model.canEndTurn
                                                 ? () {

@@ -17,18 +17,6 @@ enum HoneymoonPhase {
   play,
 }
 
-class ActionButton {
-  final String label;
-  final bool enabled;
-  final Function() onPressed;
-
-  ActionButton({
-    required this.label,
-    required this.onPressed,
-    this.enabled = true,
-  });
-}
-
 class HoneymoonBridgeGameProvider with ChangeNotifier {
 
   HoneymoonBridgeGameProvider() {
@@ -58,8 +46,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
   BiddingModel? _bidding;
   BiddingModel? get bidding => _bidding;
-
-  List<ActionButton> additionalButtons = [];
 
   Future<void> newGame(List<PlayerModel> players) async {
     final deck = await _service.newDeck();
