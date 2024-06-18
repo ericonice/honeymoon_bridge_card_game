@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:honeymoon_bridge_game/models/bid.dart';
+import 'package:honeymoon_bridge_game/models/bid_model.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/providers/honeymoon_bridge_game_provider.dart';
 import 'package:provider/provider.dart';

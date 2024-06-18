@@ -13,7 +13,7 @@ class PlayingArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HoneymoonBridgeGameProvider>(
         builder: (context, model, child) {
-      var phase = model.gameState[GS_PHASE];
+      var phase = model.gameState[gsPhase];
 
       return Row(
         children: [

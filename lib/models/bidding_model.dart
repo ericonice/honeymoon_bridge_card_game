@@ -1,4 +1,4 @@
-import 'package:honeymoon_bridge_game/models/bid.dart';
+import 'package:honeymoon_bridge_game/models/bid_model.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/models/player_model.dart';
 import 'package:collection/collection.dart'; 
