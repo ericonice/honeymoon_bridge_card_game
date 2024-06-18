@@ -14,14 +14,14 @@ class TrickArea extends StatelessWidget {
     return Column(
       children: [
         players[1].playedCard == null
-            ? const CardBack()
+            ? const Spacer()
             : PlayingCard(
                 card: players[1].playedCard!,
                 size: size,
                 visible: true,
               ),
         players[0].playedCard == null
-            ? const CardBack()
+            ? const Spacer()
             : PlayingCard(
                 card: players[0].playedCard!,
                 size: size,

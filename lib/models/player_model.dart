@@ -1,4 +1,5 @@
 import 'package:honeymoon_bridge_game/models/card_model.dart';
+import 'package:honeymoon_bridge_game/models/score_model.dart';
 
 class PlayerModel {
   final String name;
@@ -6,14 +7,13 @@ class PlayerModel {
   List<CardModel> cards;
   int tricks;
   CardModel? playedCard;
-  int score;
+  ScoreModel score = ScoreModel();
 
   PlayerModel({
     required this.name,
     this.cards = const [],
     this.tricks = 0,
-    this.isHuman = false,
-    this.score = 0,
+    this.isHuman = false
   });
 
   addCards(List<CardModel> newCards) {

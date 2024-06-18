@@ -48,10 +48,20 @@ class StatusArea extends StatelessWidget {
                 TableRow(
                   children: [
                     TableCell(
-                      child: Text(players[0].score.toString()),
+                      child: Text("Over: ${players[0].score.over}"),
                     ),
                     TableCell(
-                      child: Text(players[1].score.toString()),
+                      child: Text("Over: ${players[1].score.over}"),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    TableCell(
+                      child: Text("Under: ${players[0].score.under}"),
+                    ),
+                    TableCell(
+                      child: Text("Under: ${players[1].score.under}"),
                     ),
                   ],
                 ),

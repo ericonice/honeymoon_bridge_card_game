@@ -53,11 +53,28 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     _players = players;
     _discards = [];
     _turn = Turn(players: players, currentPlayer: players.first);
+    _selectionCards = [];
     _bidding =
         BiddingModel(players: players, currentPlayer: players.first, bids: []);
     setupBoard();
 
     notifyListeners();
+  }
+
+  Future<void> setupBoard() async {
+    turn.drawCount = 0;
+    turn.actionCount = 0;
+    players[0].tricks = 0;
+    players[1].tricks = 0;
+    gameState[gsPhase] = HoneymoonPhase.selection;
+    await drawSelectionCards();
+
+    //temporary
+    // gameState[GS_PHASE] = HoneymoonPhase.play;
+    // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
+    // await drawCards(players[0], count: 13, allowAnyTime: true);
+    // await drawCards(players[1], count: 13, allowAnyTime: true);
+    // await endTurn();
   }
 
   Future<void> drawCardToDiscardPile({int count = 1}) async {
@@ -163,15 +180,16 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     player.playedCard = card;
     _turn.actionCount += 1;
 
+    notifyListeners();
+    await Future.delayed(defaultDelay);
+
+    if (gameIsOver) {
+      finishGame();
+    }
+
     if (player.isHuman) {
       await endTurn();
     }
-
-    // if (gameIsOver) {
-    //   finishGame();
-    // }
-
-    notifyListeners();
   }
 
   bool canDrawCardsFromDiscardPile({int count = 1}) {
@@ -266,13 +284,13 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
           }
 
           notifyListeners();
-          await Future.delayed(defaultDelay);
+          //await Future.delayed(defaultDelay);
 
           // winner starts the next turn
           _turn.nextTurn(player: winner);
         } else if (_turn.currentPlayer.playedCard == null) {
-          // winnder of the bridge starts
-          _turn.nextTurn(player: _turn.otherPlayer);
+          // loser of the contract plays first
+          _turn.nextTurn(player: _turn.currentPlayer);
         } else {
           // other player needs to play now
           _turn.nextTurn(player: _turn.otherPlayer);
@@ -301,20 +319,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
         action: action,
       ),
     );
-  }
-
-  Future<void> setupBoard() async {
-    turn.drawCount = 0;
-    turn.actionCount = 0;
-    gameState[gsPhase] = HoneymoonPhase.selection;
-    await drawSelectionCards();
-
-    //temporary
-    // gameState[GS_PHASE] = HoneymoonPhase.play;
-    // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
-    // await drawCards(players[0], count: 13, allowAnyTime: true);
-    // await drawCards(players[1], count: 13, allowAnyTime: true);
-    // await endTurn();
   }
 
   bool get canBid {
@@ -361,20 +365,31 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
     switch (phase) {
       case HoneymoonPhase.selection:
+      case HoneymoonPhase.bidding:
         return false;
+      case HoneymoonPhase.play:
+        return players.every((p) => p.cards.isEmpty);
     }
 
     return false;
   }
 
-  void finishGame() {
-    showToast("Game over! ${turn.currentPlayer.name} WINS!");
+  Future<void> finishGame({bool startAnotherGame = true}) async {
+    showToast("Game over!");
     notifyListeners();
+
+    // Update score
+    calculateAndUpdateScore();
+
+    // Start next game
+    if (startAnotherGame) {
+      await newGame(players);
+    }
   }
 
   Future<void> botTurn() async {
     final phase = gameState[gsPhase];
-    await Future.delayed(defaultDelay);
+    //await Future.delayed(defaultDelay);
     var bot = players[1];
 
     switch (phase) {
@@ -415,11 +430,13 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
             if (possibleCards.isNotEmpty) {
               // Handle 1
               cardToPlay = possibleCards.lastWhereOrNull((c) => c.rank > rank);
-              cardToPlay ??= possibleCards.firstWhere((c) => c.rank < rank);
-            } else if (suitContract != Suit.NT) {
-              // Handle 2
-              cardToPlay =
-                  bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
+              cardToPlay ??= possibleCards.lastWhere((c) => c.rank < rank);
+            } else {
+              if (suitContract != Suit.NT) {
+                // Handle 2
+                cardToPlay =
+                    bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
+              }
 
               // Handle 3
               cardToPlay ??=
@@ -434,6 +451,74 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
           playCard(player: bot, card: cardToPlay!);
           await endTurn();
         }
+    }
+  }
+
+  void calculateAndUpdateScore({vulnerable = false}) {
+    if (bidding?.contract == null) return;
+
+    var contract = bidding!.contract()!;
+    var bidder = contract.player;
+    var defender = players.firstWhere((p) => p != bidder);
+    var tricksTaken = bidder.tricks;
+    var bidNumber = contract.bidNumber!;
+    var neededTricks = bidNumber + 6;
+    var doubled = bidding!.doubled();
+
+    // TODO: take into account vulnerability
+    var under = 0;
+    var over = 0;
+    if (tricksTaken >= neededTricks) {
+      var extraTricks = tricksTaken - neededTricks;
+      switch (contract.suit!) {
+        case Suit.Clubs:
+        case Suit.Diamonds:
+          under += 20 * bidNumber;
+          over += (doubled ? 50 : 20) * extraTricks;
+        case Suit.Hearts:
+        case Suit.Spades:
+          under += 30 * bidNumber;
+          over += (doubled ? 50 : 30) * extraTricks;
+        case Suit.NT:
+          under += 30 * bidNumber + 10;
+          over += (doubled ? 50 : 30) * extraTricks;
+      }
+
+      var bonus = 0;
+      if (contract.bidNumber == 6) {
+        bonus = vulnerable ? 750 : 500;
+      }
+      if (contract.bidNumber == 7) {
+        bonus = vulnerable ? 1500 : 750;
+      }
+
+      if (doubled) {
+        under = under * 2;
+        bonus = bonus * 2;
+      }
+
+      contract.player.score.under += under;
+      contract.player.score.over += over + bonus;
+    } else {
+      var over = 0;
+      var missedTricks = neededTricks = tricksTaken;
+      if (!doubled) {
+        over = missedTricks * 50;
+      } else {
+        switch (missedTricks) {
+          case 1:
+            over = 100;
+
+          case 2:
+          case 3:
+            over = (missedTricks - 1) * 200 + 100;
+
+          default:
+            over = (missedTricks - 3) * 300 + 500;
+        }
+      }
+
+      defender.score.over += over;
     }
   }
 }
