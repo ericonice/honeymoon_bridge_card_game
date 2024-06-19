@@ -48,6 +48,16 @@ class StatusArea extends StatelessWidget {
                 TableRow(
                   children: [
                     TableCell(
+                      child: Text("Games: ${players[0].score.games}"),
+                    ),
+                    TableCell(
+                      child: Text("Games: ${players[1].score.games}"),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    TableCell(
                       child: Text("Over: ${players[0].score.over}"),
                     ),
                     TableCell(
@@ -58,10 +68,30 @@ class StatusArea extends StatelessWidget {
                 TableRow(
                   children: [
                     TableCell(
-                      child: Text("Under: ${players[0].score.under}"),
+                      child: Text("Completer Under: ${players[0].score.underCompleted}"),
                     ),
                     TableCell(
-                      child: Text("Under: ${players[1].score.under}"),
+                      child: Text("Completed Under: ${players[1].score.underCompleted}"),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    TableCell(
+                      child: Text("Under: ${players[0].score.underCurrent}"),
+                    ),
+                    TableCell(
+                      child: Text("Under: ${players[1].score.underCurrent}"),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    TableCell(
+                      child: Text("Total: ${players[0].score.total}"),
+                    ),
+                    TableCell(
+                      child: Text("Total: ${players[1].score.total}"),
                     ),
                   ],
                 ),

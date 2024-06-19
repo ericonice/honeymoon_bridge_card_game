@@ -11,12 +11,7 @@ import 'package:honeymoon_bridge_game/services/deck_service.dart';
 
 const gsPhase = 'GS_PHASE';
 
-enum HoneymoonPhase {
-  selection,
-  bidding,
-  play,
-  complete
-}
+enum HoneymoonPhase { selection, bidding, play, complete }
 
 class HoneymoonBridgeGameProvider with ChangeNotifier {
   HoneymoonBridgeGameProvider() {
@@ -65,8 +60,8 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     turn.drawCount = 0;
     turn.actionCount = 0;
     for (var p in players) {
-      p.resetForNewGame();
-    }     
+      p.resetForNewGame(resetScore: rubberIsOver);
+    }
     gameState[gsPhase] = HoneymoonPhase.selection;
     await drawSelectionCards();
 
@@ -380,7 +375,12 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     return false;
   }
 
+  bool get rubberIsOver {
+        return players.any((p) => p.score.games == 2);
+  }
+
   Future<void> finishGame({bool startAnotherGame = true}) async {
+
     showToast("Game over!");
     notifyListeners();
 
@@ -518,31 +518,37 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   void calculateAndUpdateScore({vulnerable = false}) {
     if (bidding?.contract == null) return;
 
-    var contract = bidding!.contract()!;
-    var bidder = contract.player;
-    var defender = players.firstWhere((p) => p != bidder);
-    var tricksTaken = bidder.tricks;
-    var bidNumber = contract.bidNumber!;
-    var neededTricks = bidNumber + 6;
-    var doubled = bidding!.doubled();
+    final contract = bidding!.contract()!;
+    final declarer = contract.player;
+    final defender = players.firstWhere((p) => p != declarer);
+    final tricksTaken = declarer.tricks;
+    final bidNumber = contract.bidNumber!;
+    final neededTricks = bidNumber + 6;
+    final doubled = bidding!.doubled();
+    final vulnerable = declarer.score.vulnerable;
 
-    // TODO: take into account vulnerability
     var under = 0;
     var over = 0;
     if (tricksTaken >= neededTricks) {
       var extraTricks = tricksTaken - neededTricks;
+      var overtrickPoints = doubled
+          ? vulnerable
+              ? 200
+              : 100
+          : null;
+
       switch (contract.suit!) {
         case Suit.Clubs:
         case Suit.Diamonds:
           under += 20 * bidNumber;
-          over += (doubled ? 50 : 20) * extraTricks;
+          over += (overtrickPoints ?? 20) * extraTricks;
         case Suit.Hearts:
         case Suit.Spades:
           under += 30 * bidNumber;
-          over += (doubled ? 50 : 30) * extraTricks;
+          over += (overtrickPoints ?? 30) * extraTricks;
         case Suit.NT:
           under += 30 * bidNumber + 10;
-          over += (doubled ? 50 : 30) * extraTricks;
+          over += (overtrickPoints ?? 30) * extraTricks;
       }
 
       var bonus = 0;
@@ -558,24 +564,40 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
         bonus = bonus * 2;
       }
 
-      contract.player.score.under += under;
+      contract.player.score.underCurrent += under;
       contract.player.score.over += over + bonus;
+
+      if (contract.player.score.underCurrent >= 100) {
+        declarer.score.underCompleted += declarer.score.underCurrent;
+        declarer.score.underCurrent = 0;
+        declarer.score.games++;
+        defender.score.underCompleted += defender.score.underCurrent;
+        defender.score.underCurrent = 0;
+
+        if (declarer.score.games == 2) {
+          contract.player.score.over += (defender.score.games == 0) ? 700 : 500;
+        }
+      }
     } else {
       var over = 0;
-      var missedTricks = neededTricks = tricksTaken;
+      var missedTricks = neededTricks - tricksTaken;
       if (!doubled) {
         over = missedTricks * 50;
       } else {
         switch (missedTricks) {
           case 1:
-            over = 100;
+            over = vulnerable ? 200 : 100;
 
           case 2:
           case 3:
-            over = (missedTricks - 1) * 200 + 100;
+            over = vulnerable
+                ? (missedTricks - 1) * 300 + 200
+                : (missedTricks - 1) * 200 + 100;
 
           default:
-            over = (missedTricks - 3) * 300 + 500;
+            over = vulnerable
+                ? (missedTricks - 1) * 300 + 800
+                : (missedTricks - 1) * 300 + 500;
         }
       }
 

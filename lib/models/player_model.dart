@@ -35,9 +35,14 @@ class PlayerModel {
     return !isHuman;
   }
 
-  void resetForNewGame()
+  void resetForNewGame({bool resetScore = false})
   {
     tricks = 0;
     playedCard = null;
+    if (resetScore)
+    {
+      score = ScoreModel();
+    }
+
   }
 }
