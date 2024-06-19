@@ -18,49 +18,63 @@ class GameBoard extends StatelessWidget {
           ? Column(
               children: [
                 PlayerInfo(turn: model.turn),
-                PlayerCardList(
-                  player: model.players[1],
-                ),
-                const Expanded(child: PlayingArea()),
                 Expanded(
-                  child: Stack(
+                  child: Column(
                     children: [
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: (model.turn.currentPlayer ==
-                                      model.players[0])
-                                  ? Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        ElevatedButton(
-                                            onPressed: model.canEndTurn
-                                                ? () {
-                                                    model.endTurn();
-                                                  }
-                                                : null,
-                                            child: const Text("End Turn"))
-                                      ],
-                                    )
-                                  : Container(),
-                            ),
-                            PlayerCardList(
-                              player: model.players[0],
-                              onPlayCard: (CardModel card) async {
-                                await model.playCard(
-                                    player: model.players[0], card: card);
-                              },
-                            ),
-                          ],
-                        ),
-                      )
+                      PlayerCardList(
+                        player: model.players[1],
+                      ),
+                      const Expanded(child: PlayingArea()),
+                      PlayerCardList(
+                        player: model.players[0],
+                        onPlayCard: (CardModel card) async {
+                          await model.playCard(
+                              player: model.players[0], card: card);
+                        },
+                      ),
                     ],
                   ),
                 ),
+                // Expanded(
+                //   flex: 1,
+                //   child: Stack(
+                //     children: [
+                //       Align(
+                //         alignment: Alignment.bottomCenter,
+                //         child: Column(
+                //           mainAxisSize: MainAxisSize.min,
+                //           children: [
+                //             Padding(
+                //               padding: const EdgeInsets.all(8.0),
+                //               child: (model.turn.currentPlayer ==
+                //                       model.players[0])
+                //                   ? Row(
+                //                       mainAxisAlignment: MainAxisAlignment.end,
+                //                       children: [
+                //                         ElevatedButton(
+                //                             onPressed: model.canEndTurn
+                //                                 ? () {
+                //                                     model.endTurn();
+                //                                   }
+                //                                 : null,
+                //                             child: const Text("End Turn"))
+                //                       ],
+                //                     )
+                //                   : Container(),
+                //             ),
+                //             PlayerCardList(
+                //               player: model.players[0],
+                //               onPlayCard: (CardModel card) async {
+                //                 await model.playCard(
+                //                     player: model.players[0], card: card);
+                //               },
+                //             ),
+                //           ],
+                //         ),
+                //       )
+                //     ],
+                //   ),
+                // ),
               ],
             )
           : Center(

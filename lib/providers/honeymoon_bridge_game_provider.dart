@@ -70,7 +70,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     await drawSelectionCards();
 
     //temporary
-    // gameState[GS_PHASE] = HoneymoonPhase.play;
+    // gameState[gsPhase] = HoneymoonPhase.bidding;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
     // await drawCards(players[0], count: 13, allowAnyTime: true);
     // await drawCards(players[1], count: 13, allowAnyTime: true);
@@ -181,7 +181,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     _turn.actionCount += 1;
 
     notifyListeners();
-    await Future.delayed(defaultDelay);
+    await Future.delayed(const Duration(milliseconds: 750));
 
     if (gameIsOver) {
       finishGame();
@@ -406,8 +406,52 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
       case HoneymoonPhase.bidding:
         {
-          // Bot kind of dumb, only Passes
-          bid(BidModel(bot, pass: true));
+          // Bot kind of dumb, very unsophisticated bidding
+          final lastBid = bidding!.bids.lastOrNull;
+          final minBidNumber = lastBid?.bidNumber ?? 1;
+
+          var points = bot.cards.fold(
+              0, (sum, card) => sum + (card.rank < 11 ? 0 : (card.rank - 10)));
+
+          var maxBidNumber = 0;
+          if (points > 23) {
+            maxBidNumber = 3;
+          } else if (points > 18) {
+            maxBidNumber = 2;
+          } else if (points > 13) {
+            maxBidNumber = 1;
+          }
+
+          if (maxBidNumber < minBidNumber)
+          {
+            bid(BidModel(bot, pass: true));
+          }
+          else
+          {
+            // Find best suit in terms of number of cards
+            var maxCount = 0;
+            var bestSuit = Suit.Hearts;
+            final suitCounts = groupBy(bot.cards, (card) => card.suit);
+            suitCounts.forEach((suit, cards) {
+              if (cards.length > maxCount) {
+                bestSuit = suit;
+                maxCount = cards.length;
+              }
+            });
+
+            if (lastBid?.bidNumber == null) {
+              bid(BidModel(bot, suit: bestSuit, bidNumber: 1));
+            } else if (bestSuit == lastBid?.suit)
+            {
+              bid(BidModel(bot, pass: true));
+            }
+            else
+            {
+              var bidNumber = minBidNumber;
+              if (bestSuit.index < lastBid!.suit!.index) bidNumber++;
+              bid(BidModel(bot, suit: bestSuit, bidNumber: bidNumber));
+            }
+          }          
         }
 
       case HoneymoonPhase.play:

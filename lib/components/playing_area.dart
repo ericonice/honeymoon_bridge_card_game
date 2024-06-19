@@ -7,7 +7,8 @@ import 'package:honeymoon_bridge_game/providers/honeymoon_bridge_game_provider.d
 import 'package:provider/provider.dart';
 
 class PlayingArea extends StatelessWidget {
-  const PlayingArea({super.key});
+  final double size;
+  const PlayingArea({super.key, this.size = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +17,7 @@ class PlayingArea extends StatelessWidget {
       var phase = model.gameState[gsPhase];
 
       return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
             flex: 1,
@@ -30,7 +32,7 @@ class PlayingArea extends StatelessWidget {
                 ? const CardSelectionArea()
                 : phase == HoneymoonPhase.bidding
                     ? const BiddingArea()
-                    : TrickArea(players: model.players),
+                    : Expanded(child: TrickArea(size: size, players: model.players)),
           ),
         ],
       );
