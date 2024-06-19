@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/main.dart';
 import 'package:honeymoon_bridge_game/models/bid_model.dart';
 import 'package:honeymoon_bridge_game/models/bidding_model.dart';
@@ -16,6 +15,7 @@ enum HoneymoonPhase {
   selection,
   bidding,
   play,
+  complete
 }
 
 class HoneymoonBridgeGameProvider with ChangeNotifier {
@@ -70,7 +70,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     await drawSelectionCards();
 
     //temporary
-    // gameState[gsPhase] = HoneymoonPhase.bidding;
+    // gameState[gsPhase] = HoneymoonPhase.complete;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
     // await drawCards(players[0], count: 13, allowAnyTime: true);
     // await drawCards(players[1], count: 13, allowAnyTime: true);
@@ -181,10 +181,11 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     _turn.actionCount += 1;
 
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 750));
+    //await Future.delayed(defaultDelay);
 
     if (gameIsOver) {
       finishGame();
+      return;
     }
 
     if (player.isHuman) {
@@ -213,9 +214,11 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     _turn.actionCount += 1;
     _turn.selectedCard = card;
     player.addCards([card]);
-    notifyListeners();
 
-    await Future.delayed(defaultDelay);
+    // Allow to see the hidden card
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 1000));
+
     await endTurn();
   }
 
@@ -243,7 +246,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   Future<void> applyCardSideEffects(CardModel card) async {}
 
   Future<void> endTurn() async {
-    await Future.delayed(defaultDelay);
+    //await Future.delayed(defaultDelay);
 
     var phase = gameState[gsPhase];
     switch (phase) {
@@ -381,10 +384,10 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     // Update score
     calculateAndUpdateScore();
 
-    // Start next game
-    if (startAnotherGame) {
-      await newGame(players);
-    }
+    gameState[gsPhase] = HoneymoonPhase.complete;
+
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 1000));
   }
 
   Future<void> botTurn() async {
@@ -409,6 +412,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
           // Bot kind of dumb, very unsophisticated bidding
           final lastBid = bidding!.bids.lastOrNull;
           final minBidNumber = lastBid?.bidNumber ?? 1;
+          var pass = false;
 
           var points = bot.cards.fold(
               0, (sum, card) => sum + (card.rank < 11 ? 0 : (card.rank - 10)));
@@ -422,12 +426,9 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
             maxBidNumber = 1;
           }
 
-          if (maxBidNumber < minBidNumber)
-          {
-            bid(BidModel(bot, pass: true));
-          }
-          else
-          {
+          if (maxBidNumber < minBidNumber) {
+            pass = true;
+          } else {
             // Find best suit in terms of number of cards
             var maxCount = 0;
             var bestSuit = Suit.Hearts;
@@ -441,17 +442,22 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
             if (lastBid?.bidNumber == null) {
               bid(BidModel(bot, suit: bestSuit, bidNumber: 1));
-            } else if (bestSuit == lastBid?.suit)
-            {
-              bid(BidModel(bot, pass: true));
-            }
-            else
-            {
+            } else if (bestSuit == lastBid?.suit) {
+              pass = true;
+            } else {
               var bidNumber = minBidNumber;
               if (bestSuit.index < lastBid!.suit!.index) bidNumber++;
               bid(BidModel(bot, suit: bestSuit, bidNumber: bidNumber));
             }
-          }          
+          }
+
+          if (pass) {
+            bid(BidModel(bot, pass: true));
+
+            // Give time for human player to see that robot passed
+            notifyListeners();
+            await Future.delayed(const Duration(milliseconds: 1000));
+          }
         }
 
       case HoneymoonPhase.play:
@@ -492,7 +498,15 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
                 players[1].cards.reduce((a, b) => a.rank > b.rank ? a : b);
           }
 
-          playCard(player: bot, card: cardToPlay!);
+          playCard(player: bot, card: cardToPlay);
+
+          // Delay when robot plays card last, so that human player can
+          // see which card the robot played
+          if (otherPlayer.playedCard != null) {
+            notifyListeners();
+            await Future.delayed(const Duration(milliseconds: 1000));
+          }
+
           await endTurn();
         }
     }
