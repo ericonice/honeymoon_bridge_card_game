@@ -184,11 +184,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     notifyListeners();
     //await Future.delayed(defaultDelay);
 
-    if (gameIsOver) {
-      finishGame();
-      return;
-    }
-
     if (player.isHuman) {
       await endTurn();
     }
@@ -290,9 +285,16 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
           notifyListeners();
           //await Future.delayed(defaultDelay);
 
+          // Game is over if no more cards to play
+          if (gameIsOver) {
+            finishGame();
+            return;
+          }
+
           // winner starts the next turn
           _turn.nextTurn(player: winner);
         } else if (_turn.currentPlayer.playedCard == null) {
+          // TODO: I think this else can be removed
           // loser of the contract plays first
           _turn.nextTurn(player: _turn.currentPlayer);
         } else {
