@@ -34,4 +34,10 @@ class PlayerModel {
   bool get isBot {
     return !isHuman;
   }
+
+  void resetForNewGame()
+  {
+    tricks = 0;
+    playedCard = null;
+  }
 }

@@ -64,8 +64,9 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   Future<void> setupBoard() async {
     turn.drawCount = 0;
     turn.actionCount = 0;
-    players[0].tricks = 0;
-    players[1].tricks = 0;
+    for (var p in players) {
+      p.resetForNewGame();
+    }     
     gameState[gsPhase] = HoneymoonPhase.selection;
     await drawSelectionCards();
 
