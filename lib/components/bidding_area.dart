@@ -39,27 +39,28 @@ class _BiddingAreaState extends State<BiddingArea> {
           ),
           Expanded(
             child: Container(
-              color: Colors.amberAccent,
-              child: ListView(
-                primary: false,
-                padding: const EdgeInsets.all(10),
-                shrinkWrap: true,
-                children: model.bidding!
-                    .getBidRounds()
-                    .map((round) => Row(
-                          children: [
-                            Text(round.$1.toString(),
-                                style: TextStyle(
-                                  color: CardModel.suitToColor(round.$1?.suit),
-                                )),
-                            const SizedBox(width: 10),
-                            Text(round.$2 == null ? "" : round.$2.toString(),
-                                style: TextStyle(
-                                  color: CardModel.suitToColor(round.$2?.suit),
-                                )),
-                          ],
-                        ))
-                    .toList(),
+              child: Expanded(
+                child: ListView(
+                  primary: false,
+                  padding: const EdgeInsets.all(10),
+                  shrinkWrap: true,
+                  children: model.bidding!
+                      .getBidRounds()
+                      .map((round) => Row(
+                            children: [
+                              Text(round.$1.toString(),
+                                  style: TextStyle(
+                                    color: CardModel.suitToColor(round.$1?.suit),
+                                  )),
+                              const SizedBox(width: 10),
+                              Text(round.$2 == null ? "" : round.$2.toString(),
+                                  style: TextStyle(
+                                    color: CardModel.suitToColor(round.$2?.suit),
+                                  )),
+                            ],
+                          ))
+                      .toList(),
+                ),
               ),
             ),
           ),

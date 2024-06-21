@@ -32,6 +32,7 @@ class StatusArea extends StatelessWidget {
                     children: [
                       const TableRow(
                         children: [
+                          SizedBox(), // Empty cell for spacing
                           Center(
                             child: Text(
                               'Score',
@@ -43,6 +44,7 @@ class StatusArea extends StatelessWidget {
                       ),
                       TableRow(
                         children: [
+                          const SizedBox(), // Empty cell for spacing
                           TableCell(
                             child: Text(players[0].name),
                           ),
@@ -53,51 +55,53 @@ class StatusArea extends StatelessWidget {
                       ),
                       TableRow(
                         children: [
-                          TableCell(
-                            child: Text("Games: ${players[0].score.games}"),
+                          const TableCell(
+                            child: Text("Total"),
                           ),
                           TableCell(
-                            child: Text("Games: ${players[1].score.games}"),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          TableCell(
-                            child: Text("Over: ${players[0].score.over}"),
+                            child: Text("${players[0].score.total}"),
                           ),
                           TableCell(
-                            child: Text("Over: ${players[1].score.over}"),
+                            child: Text("${players[1].score.total}"),
                           ),
                         ],
                       ),
                       TableRow(
                         children: [
-                          TableCell(
-                            child: Text("Completed Under: ${players[0].score.underCompleted}"),
+                          const TableCell(
+                            child: Text("Games"),
                           ),
                           TableCell(
-                            child: Text("Completed Under: ${players[1].score.underCompleted}"),
-                          ),
-                        ],
-                      ),
-                      TableRow(
-                        children: [
-                          TableCell(
-                            child: Text("Under: ${players[0].score.underCurrent}"),
+                            child: Text("${players[0].score.games}"),
                           ),
                           TableCell(
-                            child: Text("Under: ${players[1].score.underCurrent}"),
+                            child: Text("${players[1].score.games}"),
                           ),
                         ],
                       ),
                       TableRow(
                         children: [
-                          TableCell(
-                            child: Text("Total: ${players[0].score.total}"),
+                          const TableCell(
+                            child: Text("Over"),
                           ),
                           TableCell(
-                            child: Text("Total: ${players[1].score.total}"),
+                            child: Text("${players[0].score.over + players[0].score.underCompleted}"),
+                          ),
+                          TableCell(
+                            child: Text("${players[1].score.over + players[1].score.underCompleted}"),
+                          ),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          const TableCell(
+                            child: Text("Under"),
+                          ),
+                          TableCell(
+                            child: Text("${players[0].score.underCurrent}"),
+                          ),
+                          TableCell(
+                            child: Text("${players[1].score.underCurrent}"),
                           ),
                         ],
                       ),
@@ -118,7 +122,6 @@ class StatusArea extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        SizedBox(), // Empty cell for spacing
                       ],
                     ),
                     TableRow(
@@ -132,7 +135,6 @@ class StatusArea extends StatelessWidget {
                                 color: CardModel.suitToColor(contract?.suit)),
                           ),
                         ),
-                        const SizedBox(), // Empty cell for spacing
                       ],
                     ),
                   ],
