@@ -355,7 +355,28 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
       case HoneymoonPhase.bidding:
         return false;
       case HoneymoonPhase.play:
-        return _turn.actionCount < 1 && _turn.currentPlayer == player;
+        // Check if the player hasn't already played and that it's
+        // this players turn
+        if (_turn.actionCount >= 1 || _turn.currentPlayer != player)
+        {
+          return false;
+        }
+
+        // Other player hasn't played yet, so can play any card
+        if (otherPlayer.playedCard == null) {
+          return true;
+        }
+
+        // Always OK to play card of same suit
+        var suitPlayed = otherPlayer.playedCard!.suit;
+        if (suitPlayed == card.suit) {
+          return true;
+        }
+
+        // Only able to play different suit when no cards of the
+        // played suit
+        return player.cards.every((c) => c.suit != suitPlayed);
+
       default:
         return false;
     }

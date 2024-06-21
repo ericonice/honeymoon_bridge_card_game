@@ -5,14 +5,14 @@ class BidModel {
   final PlayerModel player;
   final Suit? suit;
   final int? bidNumber;
-  final bool? double;
-  final bool? pass;
+  final bool double;
+  final bool pass;
 
   BidModel(this.player, {
     this.suit,
     this.bidNumber,
-    this.double,
-    this.pass
+    this.double = false,
+    this.pass = false
   });
 
   @override
