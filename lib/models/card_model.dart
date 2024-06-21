@@ -3,10 +3,10 @@
 import 'package:flutter/material.dart';
 
 enum Suit {
+  Spades,
+  Hearts,
   Clubs,
   Diamonds,
-  Hearts,
-  Spades,
   NT,
 }
 
@@ -120,4 +120,20 @@ class CardModel {
         return Colors.black;
     }
   }
+
+    static int suitRank(Suit suit) {
+    switch (suit) {
+      case Suit.Clubs:
+        return 1;
+      case Suit.Diamonds:
+        return 2;
+      case Suit.Hearts:
+        return 3;
+      case Suit.Spades:
+        return 4;
+      case Suit.NT:
+        return 5;
+    }
+  }
+
 }

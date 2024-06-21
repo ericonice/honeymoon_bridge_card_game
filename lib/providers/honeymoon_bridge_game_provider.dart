@@ -449,7 +449,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
               pass = true;
             } else {
               var bidNumber = minBidNumber;
-              if (bestSuit.index < lastBid!.suit!.index) bidNumber++;
+              if (CardModel.suitRank(bestSuit) < CardModel.suitRank(lastBid!.suit!)) bidNumber++;
               bid(BidModel(bot, suit: bestSuit, bidNumber: bidNumber));
             }
           }

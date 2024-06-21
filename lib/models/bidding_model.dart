@@ -87,7 +87,7 @@ class BiddingModel {
       return Suit.values;
     }
 
-    return Suit.values.where((s) => s.index > lastBid.suit!.index).toList();
+    return Suit.values.where((s) => CardModel.suitRank(s) > CardModel.suitRank(lastBid.suit!)).toList();
   }
 
   PlayerModel get otherPlayer {

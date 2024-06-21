@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+600import 'package:flutter/material.dart';
 import 'package:honeymoon_bridge_game/providers/honeymoon_bridge_game_provider.dart';
 import 'package:honeymoon_bridge_game/screens/game_screen.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+      visualDensity: VisualDensity.compact,
         primarySwatch: Colors.blue,
       ),
       home: const GameScreen(),
