@@ -17,14 +17,16 @@ class PlayingArea extends StatelessWidget {
       var phase = model.gameState[gsPhase];
 
       return Expanded(
-          child: switch (phase) {
-            HoneymoonPhase.selection => const CardSelectionArea(),
-            HoneymoonPhase.bidding => const BiddingArea(),
-            HoneymoonPhase.play =>
-              TrickArea(size: size, players: model.players),
-            HoneymoonPhase.complete => PlayAgain(players: model.players),
-            _ => Container(),
-          });
+        child: IndexedStack(
+          index: phase.index, 
+          children: [
+            const CardSelectionArea(),
+            const BiddingArea(),
+            TrickArea(size: size, players: model.players),
+            PlayAgain(players: model.players),
+          ],
+        ),
+      );
     });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeymoon_bridge_game/components/playing_card.dart';
+import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 
@@ -17,6 +18,8 @@ class DiscardPile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var responsiveSize = context.calculateResponsiveSize();
+
     return GestureDetector(
       onTap: () {
         if (onPressed != null) {
@@ -24,8 +27,8 @@ class DiscardPile extends StatelessWidget {
         }
       },
       child: Container(
-        width: cardWidth * size,
-        height: cardHeight * size,
+        width: cardWidth * responsiveSize,
+        height: cardHeight * responsiveSize,
         decoration:
             BoxDecoration(border: Border.all(color: Colors.black45, width: 2)),
         child: IgnorePointer(

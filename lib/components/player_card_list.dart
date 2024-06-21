@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeymoon_bridge_game/components/playing_card.dart';
+import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/models/player_model.dart';
@@ -18,8 +19,10 @@ class PlayerCardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var responsiveSize = context.calculateResponsiveSize();
+
     return SizedBox(
-      height: cardHeight * size,
+      height: cardHeight * responsiveSize,
       width: double.infinity,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:honeymoon_bridge_game/components/card_back.dart';
+import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 
@@ -19,25 +20,24 @@ class PlayingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var responsiveSize = context.calculateResponsiveSize();
+
     return GestureDetector(
       onTap: () {
         if (onPlayCard != null) onPlayCard!(card);
       },
       child: Container(
-        width: cardWidth * size,
-        height: cardHeight * size,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4.0),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: visible
-            ? CachedNetworkImage(
-                imageUrl: card.image,
-                width: cardWidth * size,
-                height: cardHeight * size,
-              )
-            : CardBack(size: size),
-      ),
+          width: cardWidth * responsiveSize,
+          height: cardHeight * responsiveSize,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4.0),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: CachedNetworkImage(
+            imageUrl: visible ? card.image : backOfCardImage,
+            width: cardWidth * responsiveSize,
+            height: cardHeight * responsiveSize,
+          )),
     );
   }
 }

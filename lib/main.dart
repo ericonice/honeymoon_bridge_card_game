@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-      visualDensity: VisualDensity.compact,
         primarySwatch: Colors.blue,
       ),
       home: const GameScreen(),

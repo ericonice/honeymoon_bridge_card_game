@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 
 class CardBack extends StatelessWidget {
@@ -10,11 +11,13 @@ class CardBack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var responsiveSize = context.calculateResponsiveSize();
+
     return Visibility(
       visible: visible,
       child: Container(
-        width: cardWidth * size,
-        height: cardHeight * size,
+        width: cardWidth * responsiveSize,
+        height: cardHeight * responsiveSize,
         decoration: BoxDecoration(
           color: Colors.blueGrey,
           borderRadius: BorderRadius.circular(4.0),

@@ -17,9 +17,9 @@ class GameBoard extends StatelessWidget {
         builder: (context, model, child) {
       return model.currentDeck != null
           ? SingleChildScrollView(
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height*0.8, 
-              child: Column(
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.8,
+                child: Column(
                   children: [
                     PlayerInfo(turn: model.turn),
                     StatusArea(
@@ -29,7 +29,7 @@ class GameBoard extends StatelessWidget {
                     PlayerCardList(
                       player: model.players[1],
                     ),
-                    const Expanded(child: PlayingArea()),
+                    const PlayingArea(),
                     PlayerCardList(
                       player: model.players[0],
                       onPlayCard: (CardModel card) async {
@@ -79,8 +79,8 @@ class GameBoard extends StatelessWidget {
                     // ),
                   ],
                 ),
-            ),
-          )
+              ),
+            )
           : Center(
               child: TextButton(
                 child: const Text("New Game?"),

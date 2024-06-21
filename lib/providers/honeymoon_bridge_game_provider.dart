@@ -66,7 +66,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     await drawSelectionCards();
 
     //temporary
-    // gameState[gsPhase] = HoneymoonPhase.complete;
+    // gameState[gsPhase] = HoneymoonPhase.play;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
     // await drawCards(players[0], count: 13, allowAnyTime: true);
     // await drawCards(players[1], count: 13, allowAnyTime: true);
