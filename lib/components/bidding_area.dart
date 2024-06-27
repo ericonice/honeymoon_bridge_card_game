@@ -19,147 +19,155 @@ class _BiddingAreaState extends State<BiddingArea> {
   Widget build(BuildContext context) {
     return Consumer<HoneymoonBridgeGameProvider>(
         builder: (context, model, child) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      return Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
+          Expanded(
+            flex: 5,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  model.players[0].name,
+                !model.canBid
+                    ? const Spacer()
+                    : Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _bidNumber = null;
+                                    });
+                                    model.bid(BidModel(model.turn.currentPlayer,
+                                        pass: true));
+                                  },
+                                  child: const Text("PASS")),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Visibility(
+                                visible: model.bidding!.canDouble(),
+                                child: ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _bidNumber = null;
+                                      });
+                                      model.bid(BidModel(
+                                          model.turn.currentPlayer,
+                                          double: true));
+                                    },
+                                    child: const Text("DOUBLE")),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                !model.canBid
+                    ? const Spacer()
+                    : Padding(
+                        padding: const EdgeInsets.all(5),
+                        child: Row(
+                          children: [
+                            SegmentedButton<int>(
+                              emptySelectionAllowed: true,
+                              segments: model.bidding!
+                                  .getAvailableBidNumbers()
+                                  .map((bidNumber) => ButtonSegment<int>(
+                                        value: bidNumber,
+                                        label: Text(bidNumber.toString()),
+                                      ))
+                                  .toList(),
+                              selected: {
+                                ...?(_bidNumber != null ? [_bidNumber!] : null)
+                              },
+                              onSelectionChanged: (Set<int> newSelection) {
+                                setState(() {
+                                  _bidNumber = newSelection.first;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: Row(
+                    children: [
+                      _bidNumber == null
+                          ? const Spacer()
+                          : SegmentedButton<Suit>(
+                              emptySelectionAllowed: true,
+                              segments: model.bidding!
+                                  .getAvailableSuits(_bidNumber)
+                                  .map((suit) => ButtonSegment<Suit>(
+                                        value: suit,
+                                        label: Text(
+                                            CardModel.suitToUnicode(suit),
+                                            style: TextStyle(
+                                              color:
+                                                  CardModel.suitToColor(suit),
+                                            )),
+                                      ))
+                                  .toList(),
+                              selected: {
+                                ...?(_suit != null ? [_suit!] : null)
+                              },
+                              onSelectionChanged: (Set<Suit> newSelection) {
+                                model.bid(BidModel(model.turn.currentPlayer,
+                                    suit: newSelection.first,
+                                    bidNumber: _bidNumber));
+                                setState(() {
+                                  _bidNumber = null;
+                                });
+                              },
+                            ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  model.players[1].name,
-                )
               ],
             ),
           ),
           Expanded(
+            flex: 1,
             child: Container(
               color: Theme.of(context).colorScheme.onSecondary,
-              child: Expanded(
-                child: ListView(
-                  primary: false,
-                  padding: const EdgeInsets.all(10),
-                  shrinkWrap: true,
-                  children: model.bidding!
-                      .getBidRounds()
-                      .map((round) => Row(
-                            children: [
-                              Text(round.$1.toString(),
-                                  style: TextStyle(
-                                    color:
-                                        CardModel.suitToColor(round.$1?.suit),
-                                  )),
-                              const SizedBox(width: 10),
-                              Text(round.$2 == null ? "" : round.$2.toString(),
-                                  style: TextStyle(
-                                    color:
-                                        CardModel.suitToColor(round.$2?.suit),
-                                  )),
-                            ],
-                          ))
-                      .toList(),
-                ),
-              ),
-            ),
-          ),
-          !model.canBid
-              ? const Spacer()
-              : Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _bidNumber = null;
-                              });
-                              model.bid(BidModel(model.turn.currentPlayer,
-                                  pass: true));
-                            },
-                            child: const Text("PASS")),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Visibility(
-                          visible: model.bidding!.canDouble(),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _bidNumber = null;
-                                });
-                                model.bid(BidModel(model.turn.currentPlayer,
-                                    double: true));
-                              },
-                              child: const Text("DOUBLE")),
+              child: ListView(
+                primary: false,
+                padding: const EdgeInsets.all(10),
+                shrinkWrap: true,
+                children: [
+                  // Header Row
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Text(
+                          model.players[0].name,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Text(
+                          model.players[1].name,
+                        )
+                      ],
+                    ),
                   ),
-                ),
-          !model.canBid
-              ? const Spacer()
-              : Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      SegmentedButton<int>(
-                        emptySelectionAllowed: true,
-                        segments: model.bidding!
-                            .getAvailableBidNumbers()
-                            .map((bidNumber) => ButtonSegment<int>(
-                                  value: bidNumber,
-                                  label: Text(bidNumber.toString()),
-                                ))
-                            .toList(),
-                        selected: {
-                          ...?(_bidNumber != null ? [_bidNumber!] : null)
-                        },
-                        onSelectionChanged: (Set<int> newSelection) {
-                          setState(() {
-                            _bidNumber = newSelection.first;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                _bidNumber == null
-                    ? const Spacer()
-                    : SegmentedButton<Suit>(
-                        emptySelectionAllowed: true,
-                        segments: model.bidding!
-                            .getAvailableSuits(_bidNumber)
-                            .map((suit) => ButtonSegment<Suit>(
-                                  value: suit,
-                                  label: Text(CardModel.suitToUnicode(suit),
-                                      style: TextStyle(
-                                        color: CardModel.suitToColor(suit),
-                                      )),
-                                ))
-                            .toList(),
-                        selected: {
-                          ...?(_suit != null ? [_suit!] : null)
-                        },
-                        onSelectionChanged: (Set<Suit> newSelection) {
-                          model.bid(BidModel(model.turn.currentPlayer,
-                              suit: newSelection.first, bidNumber: _bidNumber));
-                          setState(() {
-                            _bidNumber = null;
-                          });
-                        },
-                      ),
-              ],
+                  ...model.bidding!.getBidRounds().map((round) => Row(
+                        children: [
+                          Text(round.$1.toString(),
+                              style: TextStyle(
+                                color: CardModel.suitToColor(round.$1?.suit),
+                              )),
+                          const SizedBox(width: 10),
+                          Text(round.$2 == null ? "" : round.$2.toString(),
+                              style: TextStyle(
+                                color: CardModel.suitToColor(round.$2?.suit),
+                              )),
+                        ],
+                      ))
+                ],
+              ),
             ),
           ),
         ],

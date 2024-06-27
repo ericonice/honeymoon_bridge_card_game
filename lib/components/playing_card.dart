@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:honeymoon_bridge_game/components/card_back.dart';
+
 import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';

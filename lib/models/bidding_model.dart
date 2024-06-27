@@ -39,7 +39,7 @@ class BiddingModel {
       return false;
     }
 
-    return bids[bids.length - 2].double ?? false;
+    return bids[bids.length - 2].double;
   }
 
   void bid(PlayerModel player, BidModel bid) {

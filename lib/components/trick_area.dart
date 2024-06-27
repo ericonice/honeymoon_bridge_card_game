@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:honeymoon_bridge_game/components/card_back.dart';
 import 'package:honeymoon_bridge_game/components/playing_card.dart';
 import 'package:honeymoon_bridge_game/components/responsive_utils.dart';
 import 'package:honeymoon_bridge_game/constants.dart';

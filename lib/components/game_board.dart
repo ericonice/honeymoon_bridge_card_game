@@ -18,24 +18,35 @@ class GameBoard extends StatelessWidget {
       return model.currentDeck != null
           ? SingleChildScrollView(
               child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.8,
+                height: MediaQuery.of(context).size.height * 0.9,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     PlayerInfo(turn: model.turn),
-                    StatusArea(
-                      players: model.players,
-                      contract: model.bidding!.contract(),
+                    Expanded(
+                      flex: 1,
+                      child: StatusArea(
+                        players: model.players,
+                        contract: model.bidding!.contract(),
+                      ),
                     ),
-                    PlayerCardList(
-                      player: model.players[1],
+                    Expanded(
+                      flex: 1,
+                      child: PlayerCardList(
+                        player: model.players[1],
+                      ),
                     ),
-                    const PlayingArea(),
-                    PlayerCardList(
-                      player: model.players[0],
-                      onPlayCard: (CardModel card) async {
-                        await model.playCard(
-                            player: model.players[0], card: card);
-                      },
+                    const Expanded(
+                        flex: 3, child: PlayingArea()),
+                    Expanded(
+                      flex: 1,
+                      child: PlayerCardList(
+                        player: model.players[0],
+                        onPlayCard: (CardModel card) async {
+                          await model.playCard(
+                              player: model.players[0], card: card);
+                        },
+                      ),
                     ),
                     // Expanded(
                     //   flex: 1,

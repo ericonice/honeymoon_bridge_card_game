@@ -7,6 +7,6 @@ extension ResponsiveSize on BuildContext {
   double calculateResponsiveSize() {
     var size = MediaQuery.sizeOf(this);
 
-    return min(1, size.width / (cardWidth * 14));
+    return min(1, size.width / (cardWidth * 8));
   }
 }
