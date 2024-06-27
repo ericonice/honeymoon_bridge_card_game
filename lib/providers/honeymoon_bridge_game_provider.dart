@@ -419,7 +419,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
     // Update score
     calculateAndUpdateScore();
-    _currentDeck = null;
     gameState[gsPhase] = HoneymoonPhase.complete;
 
     notifyListeners();
