@@ -20,6 +20,7 @@ class _BiddingAreaState extends State<BiddingArea> {
     return Consumer<HoneymoonBridgeGameProvider>(
         builder: (context, model, child) {
       return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Flexible(
             flex: 2,

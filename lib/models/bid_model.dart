@@ -8,20 +8,17 @@ class BidModel {
   final bool double;
   final bool pass;
 
-  BidModel(this.player, {
-    this.suit,
-    this.bidNumber,
-    this.double = false,
-    this.pass = false
-  });
+  BidModel(this.player,
+      {this.suit, this.bidNumber, this.double = false, this.pass = false});
 
   @override
-  String toString()
-  {
+  String toString() {
     if (pass == true) return "Pass";
-    if (double == true) return "Double";
 
-    return "$bidNumber${CardModel.suitToUnicode(suit!)}";
+    if (bidNumber != null) {
+      return "$bidNumber${CardModel.suitToUnicode(suit!)}${double ? "DOUBLE" : ""}";
+    }
 
+    return "Double";
   }
 }

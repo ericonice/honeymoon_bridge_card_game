@@ -3,7 +3,13 @@ import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/models/player_model.dart';
 import 'package:collection/collection.dart';
 
-const suitBidOrder = [Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades, Suit.NT];
+const suitBidOrder = [
+  Suit.Clubs,
+  Suit.Diamonds,
+  Suit.Hearts,
+  Suit.Spades,
+  Suit.NT
+];
 
 class BiddingModel {
   final List<PlayerModel> players;
@@ -27,11 +33,14 @@ class BiddingModel {
   }
 
   BidModel? contract() {
-    if (bids.isEmpty) {
-      return null;
-    }
+    var lastBid = bids.lastWhereOrNull((b) => b.bidNumber != null);
 
-    return bids.lastWhereOrNull((b) => b.bidNumber != null);
+    return (lastBid == null)
+        ? null
+        : BidModel(lastBid.player,
+            suit: lastBid.suit,
+            bidNumber: lastBid.bidNumber,
+            double: bids[bids.length - 2].double);
   }
 
   bool doubled() {
@@ -89,7 +98,9 @@ class BiddingModel {
       return suitBidOrder;
     }
 
-    return suitBidOrder.where((s) => CardModel.suitRank(s) > CardModel.suitRank(lastBid.suit!)).toList();
+    return suitBidOrder
+        .where((s) => CardModel.suitRank(s) > CardModel.suitRank(lastBid.suit!))
+        .toList();
   }
 
   PlayerModel get otherPlayer {

@@ -57,19 +57,21 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   }
 
   Future<void> setupBoard() async {
+    // Reset the score if the rubber is over
+    final resetScore = rubberIsOver;
     turn.drawCount = 0;
     turn.actionCount = 0;
     for (var p in players) {
-      p.resetForNewGame(resetScore: rubberIsOver);
+      p.resetForNewGame(resetScore: resetScore);
     }
     gameState[gsPhase] = HoneymoonPhase.selection;
     await drawSelectionCards();
 
     //temporary
-    gameState[gsPhase] = HoneymoonPhase.bidding;
+    //gameState[gsPhase] = HoneymoonPhase.bidding;
     // bidding!.bid(players[0], BidModel(players[0], suit: Suit.Spades, bidNumber: 2));
-    await drawCards(players[0], count: 13, allowAnyTime: true);
-    await drawCards(players[1], count: 13, allowAnyTime: true);
+    //await drawCards(players[0], count: 13, allowAnyTime: true);
+    //await drawCards(players[1], count: 13, allowAnyTime: true);
     // await endTurn();
   }
 
@@ -101,6 +103,14 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
     // If bidding is complete, move on to the next phase
     if (bidding!.done()) {
+      // If no contract, then game is over
+      if (bidding!.contract() == null)
+      {
+        finishGame();
+        return;
+      }
+
+      // Otherwise, time to play
       gameState[gsPhase] = HoneymoonPhase.play;
     }
 
@@ -357,8 +367,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
       case HoneymoonPhase.play:
         // Check if the player hasn't already played and that it's
         // this players turn
-        if (_turn.actionCount >= 1 || _turn.currentPlayer != player)
-        {
+        if (_turn.actionCount >= 1 || _turn.currentPlayer != player) {
           return false;
         }
 
@@ -387,8 +396,12 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
     switch (phase) {
       case HoneymoonPhase.selection:
-      case HoneymoonPhase.bidding:
         return false;
+      case HoneymoonPhase.bidding:
+        // Game is over if both players passed
+        return bidding?.bids.length == 2 &&
+            bidding!.bids[0].pass &&
+            bidding!.bids[1].pass;
       case HoneymoonPhase.play:
         return players.every((p) => p.cards.isEmpty);
     }
@@ -397,17 +410,16 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   }
 
   bool get rubberIsOver {
-        return players.any((p) => p.score.games == 2);
+    return players.any((p) => p.score.games == 2);
   }
 
   Future<void> finishGame({bool startAnotherGame = true}) async {
-
     showToast("Game over!");
     notifyListeners();
 
     // Update score
     calculateAndUpdateScore();
-
+    _currentDeck = null;
     gameState[gsPhase] = HoneymoonPhase.complete;
 
     notifyListeners();
@@ -434,7 +446,8 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
       case HoneymoonPhase.bidding:
         {
           // Bot kind of dumb, very unsophisticated bidding
-          final lastBid = bidding!.bids.lastOrNull;
+          final lastBid = bidding!.bids
+                  .lastWhereOrNull((b) => b.bidNumber != null);
           final minBidNumber = lastBid?.bidNumber ?? 1;
           var pass = false;
 
@@ -470,7 +483,8 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
               pass = true;
             } else {
               var bidNumber = minBidNumber;
-              if (CardModel.suitRank(bestSuit) < CardModel.suitRank(lastBid!.suit!)) bidNumber++;
+              if (CardModel.suitRank(bestSuit) <
+                  CardModel.suitRank(lastBid!.suit!)) bidNumber++;
               bid(BidModel(bot, suit: bestSuit, bidNumber: bidNumber));
             }
           }
@@ -539,7 +553,14 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   void calculateAndUpdateScore({vulnerable = false}) {
     if (bidding?.contract == null) return;
 
-    final contract = bidding!.contract()!;
+    final contract = bidding!.contract();
+    
+    // Nothing to do if no contract 
+    if (contract == null)
+    {
+      return;
+    }
+
     final declarer = contract.player;
     final defender = players.firstWhere((p) => p != declarer);
     final tricksTaken = declarer.tricks;

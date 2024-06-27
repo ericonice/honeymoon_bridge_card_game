@@ -24,7 +24,7 @@ class GameBoard extends StatelessWidget {
                   children: [
                     PlayerInfo(turn: model.turn),
                     Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: StatusArea(
                         players: model.players,
                         contract: model.bidding!.contract(),
