@@ -21,11 +21,9 @@ class _BiddingAreaState extends State<BiddingArea> {
         builder: (context, model, child) {
       return Row(
         children: [
-          Expanded(
-            flex: 5,
+          Flexible(
+            flex: 2,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 !model.canBid
                     ? const Spacer()
@@ -66,71 +64,84 @@ class _BiddingAreaState extends State<BiddingArea> {
                       ),
                 !model.canBid
                     ? const Spacer()
-                    : Padding(
-                        padding: const EdgeInsets.all(5),
+                    : Expanded(
                         child: Row(
                           children: [
-                            SegmentedButton<int>(
-                              emptySelectionAllowed: true,
-                              segments: model.bidding!
-                                  .getAvailableBidNumbers()
-                                  .map((bidNumber) => ButtonSegment<int>(
-                                        value: bidNumber,
-                                        label: Text(bidNumber.toString()),
-                                      ))
-                                  .toList(),
-                              selected: {
-                                ...?(_bidNumber != null ? [_bidNumber!] : null)
-                              },
-                              onSelectionChanged: (Set<int> newSelection) {
-                                setState(() {
-                                  _bidNumber = newSelection.first;
-                                });
-                              },
+                            SizedBox(
+                              width: 300,
+                              child: SegmentedButton<int>(
+                                emptySelectionAllowed: true,
+                                style: ButtonStyle(
+                                  padding: WidgetStateProperty.all(
+                                      const EdgeInsets.symmetric(
+                                          horizontal: 5)),
+                                  textStyle: WidgetStateProperty.all(
+                                    const TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                                segments: model.bidding!
+                                    .getAvailableBidNumbers()
+                                    .map((bidNumber) => ButtonSegment<int>(
+                                          value: bidNumber,
+                                          label: Text(bidNumber.toString()),
+                                        ))
+                                    .toList(),
+                                selected: {
+                                  ...?(_bidNumber != null
+                                      ? [_bidNumber!]
+                                      : null)
+                                },
+                                onSelectionChanged: (Set<int> newSelection) {
+                                  setState(() {
+                                    _bidNumber = newSelection.first;
+                                  });
+                                },
+                              ),
                             ),
                           ],
                         ),
                       ),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Row(
-                    children: [
-                      _bidNumber == null
-                          ? const Spacer()
-                          : SegmentedButton<Suit>(
-                              emptySelectionAllowed: true,
-                              segments: model.bidding!
-                                  .getAvailableSuits(_bidNumber)
-                                  .map((suit) => ButtonSegment<Suit>(
-                                        value: suit,
-                                        label: Text(
-                                            CardModel.suitToUnicode(suit),
-                                            style: TextStyle(
-                                              color:
-                                                  CardModel.suitToColor(suit),
-                                            )),
-                                      ))
-                                  .toList(),
-                              selected: {
-                                ...?(_suit != null ? [_suit!] : null)
-                              },
-                              onSelectionChanged: (Set<Suit> newSelection) {
-                                model.bid(BidModel(model.turn.currentPlayer,
-                                    suit: newSelection.first,
-                                    bidNumber: _bidNumber));
-                                setState(() {
-                                  _bidNumber = null;
-                                });
-                              },
-                            ),
-                    ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(5),
+                    child: Row(
+                      children: [
+                        _bidNumber == null
+                            ? const Spacer()
+                            : SegmentedButton<Suit>(
+                                emptySelectionAllowed: true,
+                                segments: model.bidding!
+                                    .getAvailableSuits(_bidNumber)
+                                    .map((suit) => ButtonSegment<Suit>(
+                                          value: suit,
+                                          label: Text(
+                                              CardModel.suitToUnicode(suit),
+                                              style: TextStyle(
+                                                color:
+                                                    CardModel.suitToColor(suit),
+                                              )),
+                                        ))
+                                    .toList(),
+                                selected: {
+                                  ...?(_suit != null ? [_suit!] : null)
+                                },
+                                onSelectionChanged: (Set<Suit> newSelection) {
+                                  model.bid(BidModel(model.turn.currentPlayer,
+                                      suit: newSelection.first,
+                                      bidNumber: _bidNumber));
+                                  setState(() {
+                                    _bidNumber = null;
+                                  });
+                                },
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            flex: 1,
+          Flexible(
             child: Container(
               color: Theme.of(context).colorScheme.onSecondary,
               child: ListView(
@@ -139,31 +150,38 @@ class _BiddingAreaState extends State<BiddingArea> {
                 shrinkWrap: true,
                 children: [
                   // Header Row
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Text(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Center(
+                        child: Text(
                           model.players[0].name,
                         ),
-                        const SizedBox(width: 10),
-                        Text(
+                      ),
+                      const SizedBox(width: 5),
+                      Center(
+                        child: Text(
                           model.players[1].name,
-                        )
-                      ],
-                    ),
+                        ),
+                      )
+                    ],
                   ),
                   ...model.bidding!.getBidRounds().map((round) => Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(round.$1.toString(),
-                              style: TextStyle(
-                                color: CardModel.suitToColor(round.$1?.suit),
-                              )),
-                          const SizedBox(width: 10),
-                          Text(round.$2 == null ? "" : round.$2.toString(),
-                              style: TextStyle(
-                                color: CardModel.suitToColor(round.$2?.suit),
-                              )),
+                          Center(
+                            child: Text(round.$1.toString(),
+                                style: TextStyle(
+                                  color: CardModel.suitToColor(round.$1?.suit),
+                                )),
+                          ),
+                          const SizedBox(width: 5),
+                          Center(
+                            child: Text(round.$2 == null ? "" : round.$2.toString(),
+                                style: TextStyle(
+                                  color: CardModel.suitToColor(round.$2?.suit),
+                                )),
+                          ),
                         ],
                       ))
                 ],

@@ -140,40 +140,31 @@ class StatusArea extends StatelessWidget {
               ),
             ),
             Card(
-              child: Table(
-                children: [
-                  const TableRow(
-                    children: [
-                      Center(
-                        child: Text(
-                          'Tricks',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+              child: Padding(
+                // Add padding for visual spacing
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'Tricks',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(), // Empty cell for spacing
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      TableCell(
-                        child: Text(players[0].name),
-                      ),
-                      TableCell(
-                        child: Text(players[1].name),
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      TableCell(
-                        child: Text(players[0].tricks.toString()),
-                      ),
-                      TableCell(
-                        child: Text(players[1].tricks.toString()),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(
+                        height:
+                            8), // Optional: Add space between title and trick counts
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment
+                          .spaceAround, // Evenly space trick counts
+                      children: [
+                        Text("${players[0].name}: ${players[0].tricks}"),
+                        Text("${players[1].name}: ${players[1].tricks}"),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ]),
