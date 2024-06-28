@@ -7,6 +7,7 @@ import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/models/deck_model.dart';
 import 'package:honeymoon_bridge_game/models/player_model.dart';
 import 'package:honeymoon_bridge_game/models/turn_model.dart';
+import 'package:honeymoon_bridge_game/providers/honeymoon_bot_ai.dart';
 import 'package:honeymoon_bridge_game/services/deck_service.dart';
 
 const gsPhase = 'GS_PHASE';
@@ -429,11 +430,12 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     final phase = gameState[gsPhase];
     //await Future.delayed(defaultDelay);
     var bot = players[1];
+    var botAi = HoneymoonBotAi(bot);
 
     switch (phase) {
       case HoneymoonPhase.selection:
         {
-          var card = (selectionCards.first.rank >= 11)
+          var card = botAi.chooseCard(selectionCards.first)
               ? selectionCards[0]
               : selectionCards[1];
           selectCard(turn.currentPlayer, card);
@@ -444,53 +446,10 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
       case HoneymoonPhase.bidding:
         {
-          // Bot kind of dumb, very unsophisticated bidding
-          final lastBid = bidding!.bids
-                  .lastWhereOrNull((b) => b.bidNumber != null);
-          final minBidNumber = lastBid?.bidNumber ?? 1;
-          var pass = false;
+          var botBid = botAi.chooseBid(bidding!.bids);
+          bid(botBid);
 
-          var points = bot.cards.fold(
-              0, (sum, card) => sum + (card.rank < 11 ? 0 : (card.rank - 10)));
-
-          var maxBidNumber = 0;
-          if (points > 23) {
-            maxBidNumber = 3;
-          } else if (points > 18) {
-            maxBidNumber = 2;
-          } else if (points > 13) {
-            maxBidNumber = 1;
-          }
-
-          if (maxBidNumber < minBidNumber) {
-            pass = true;
-          } else {
-            // Find best suit in terms of number of cards
-            var maxCount = 0;
-            var bestSuit = Suit.Hearts;
-            final suitCounts = groupBy(bot.cards, (card) => card.suit);
-            suitCounts.forEach((suit, cards) {
-              if (cards.length > maxCount) {
-                bestSuit = suit;
-                maxCount = cards.length;
-              }
-            });
-
-            if (lastBid?.bidNumber == null) {
-              bid(BidModel(bot, suit: bestSuit, bidNumber: 1));
-            } else if (bestSuit == lastBid?.suit) {
-              pass = true;
-            } else {
-              var bidNumber = minBidNumber;
-              if (CardModel.suitRank(bestSuit) <
-                  CardModel.suitRank(lastBid!.suit!)) bidNumber++;
-              bid(BidModel(bot, suit: bestSuit, bidNumber: bidNumber));
-            }
-          }
-
-          if (pass) {
-            bid(BidModel(bot, pass: true));
-
+          if (botBid.pass) {
             // Give time for human player to see that robot passed
             notifyListeners();
             await Future.delayed(const Duration(milliseconds: 1000));

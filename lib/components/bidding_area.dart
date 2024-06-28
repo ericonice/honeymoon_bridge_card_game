@@ -109,32 +109,35 @@ class _BiddingAreaState extends State<BiddingArea> {
                       children: [
                         _bidNumber == null
                             ? const Spacer()
-                            : SegmentedButton<Suit>(
-                                emptySelectionAllowed: true,
-                                segments: model.bidding!
-                                    .getAvailableSuits(_bidNumber)
-                                    .map((suit) => ButtonSegment<Suit>(
-                                          value: suit,
-                                          label: Text(
-                                              CardModel.suitToUnicode(suit),
-                                              style: TextStyle(
-                                                color:
-                                                    CardModel.suitToColor(suit),
-                                              )),
-                                        ))
-                                    .toList(),
-                                selected: {
-                                  ...?(_suit != null ? [_suit!] : null)
-                                },
-                                onSelectionChanged: (Set<Suit> newSelection) {
-                                  model.bid(BidModel(model.turn.currentPlayer,
-                                      suit: newSelection.first,
-                                      bidNumber: _bidNumber));
-                                  setState(() {
-                                    _bidNumber = null;
-                                  });
-                                },
-                              ),
+                            : SizedBox(
+                              width: 300,
+                              child: SegmentedButton<Suit>(
+                                  emptySelectionAllowed: true,
+                                  segments: model.bidding!
+                                      .getAvailableSuits(_bidNumber)
+                                      .map((suit) => ButtonSegment<Suit>(
+                                            value: suit,
+                                            label: Text(
+                                                CardModel.suitToUnicode(suit),
+                                                style: TextStyle(
+                                                  color:
+                                                      CardModel.suitToColor(suit),
+                                                )),
+                                          ))
+                                      .toList(),
+                                  selected: {
+                                    ...?(_suit != null ? [_suit!] : null)
+                                  },
+                                  onSelectionChanged: (Set<Suit> newSelection) {
+                                    model.bid(BidModel(model.turn.currentPlayer,
+                                        suit: newSelection.first,
+                                        bidNumber: _bidNumber));
+                                    setState(() {
+                                      _bidNumber = null;
+                                    });
+                                  },
+                                ),
+                            ),
                       ],
                     ),
                   ),

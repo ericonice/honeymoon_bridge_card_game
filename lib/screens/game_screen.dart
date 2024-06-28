@@ -36,7 +36,7 @@ class _GameScreenState extends State<GameScreen> {
               await _gameProvider.newGame(players);
             },
             child: const Text(
-              "New Game",
+              "New Rubber",
               style: TextStyle(color: Colors.white),
             ),
           )

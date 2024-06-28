@@ -36,8 +36,7 @@ class GameBoard extends StatelessWidget {
                         player: model.players[1],
                       ),
                     ),
-                    const Expanded(
-                        flex: 3, child: PlayingArea()),
+                    const Expanded(flex: 3, child: PlayingArea()),
                     Expanded(
                       flex: 1,
                       child: PlayerCardList(
@@ -94,7 +93,7 @@ class GameBoard extends StatelessWidget {
             )
           : Center(
               child: TextButton(
-                child: const Text("New Game?"),
+                child: Text(model.rubberIsOver ? "New Rubber>" : "New Game?"),
                 onPressed: () {
                   final players = [
                     PlayerModel(name: "Noah", isHuman: true),
