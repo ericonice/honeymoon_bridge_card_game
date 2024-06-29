@@ -47,53 +47,13 @@ class GameBoard extends StatelessWidget {
                         },
                       ),
                     ),
-                    // Expanded(
-                    //   flex: 1,
-                    //   child: Stack(
-                    //     children: [
-                    //       Align(
-                    //         alignment: Alignment.bottomCenter,
-                    //         child: Column(
-                    //           mainAxisSize: MainAxisSize.min,
-                    //           children: [
-                    //             Padding(
-                    //               padding: const EdgeInsets.all(8.0),
-                    //               child: (model.turn.currentPlayer ==
-                    //                       model.players[0])
-                    //                   ? Row(
-                    //                       mainAxisAlignment: MainAxisAlignment.end,
-                    //                       children: [
-                    //                         ElevatedButton(
-                    //                             onPressed: model.canEndTurn
-                    //                                 ? () {
-                    //                                     model.endTurn();
-                    //                                   }
-                    //                                 : null,
-                    //                             child: const Text("End Turn"))
-                    //                       ],
-                    //                     )
-                    //                   : Container(),
-                    //             ),
-                    //             PlayerCardList(
-                    //               player: model.players[0],
-                    //               onPlayCard: (CardModel card) async {
-                    //                 await model.playCard(
-                    //                     player: model.players[0], card: card);
-                    //               },
-                    //             ),
-                    //           ],
-                    //         ),
-                    //       )
-                    //     ],
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
             )
           : Center(
               child: TextButton(
-                child: Text(model.rubberIsOver ? "New Rubber>" : "New Game?"),
+                child: const Text("New Rubber?"),
                 onPressed: () {
                   final players = [
                     PlayerModel(name: "Noah", isHuman: true),

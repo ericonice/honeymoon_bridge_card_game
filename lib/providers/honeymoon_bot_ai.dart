@@ -15,34 +15,52 @@ class HoneymoonBotAi {
     var numberOfCardsOfSameSuit =
         bot.cards.where((c) => c.suit == card.suit).length;
 
+    var keep = false;
     switch (card.rank) {
       // Always choose A
       case 14:
-        return true;
+        keep = true;
 
       // Choose king if at least 1 in same suit or two more turns
       case 13:
-        return turnsRemaining >= 2 || numberOfCardsOfSameSuit >= 1;
+        keep = turnsRemaining >= 2 || numberOfCardsOfSameSuit >= 1;
 
       case 12:
-        return turnsRemaining >= 5 || numberOfCardsOfSameSuit >= 2;
+        keep = turnsRemaining >= 5 || numberOfCardsOfSameSuit >= 2;
 
       case 11:
-        return turnsRemaining >= 11 ||
+        keep = turnsRemaining >= 11 ||
             (turnsRemaining >= 7 && numberOfCardsOfSameSuit >= 2) ||
             (turnsRemaining >= 5 && numberOfCardsOfSameSuit >= 3) ||
             (numberOfCardsOfSameSuit >= 4);
 
       default:
-        return (turnsRemaining >= 11 && numberOfCardsOfSameSuit >= 2) ||
+        keep = (turnsRemaining >= 10 && numberOfCardsOfSameSuit >= 1) ||
+            (turnsRemaining >= 7 && numberOfCardsOfSameSuit >= 2) ||
             (turnsRemaining >= 5 && numberOfCardsOfSameSuit >= 3) ||
             (numberOfCardsOfSameSuit >= 4);
     }
+
+    print("====== CHOOSE =========");
+    print("hand: ${bot.cards.join(",")}");
+    print("card: $card");
+    print("turns remaining: $turnsRemaining");
+    print("same suit: $numberOfCardsOfSameSuit");
+    print("keep: $keep");
+    print("========================");
+
+    return keep;
   }
 
   BidModel chooseBid(List<BidModel> bids) {
+    // Let's not get into redoubling yet
+    if (bids.lastOrNull?.double == true) {
+      return BidModel(bot, pass: true);
+    }
+
     final lastBid = bids.lastWhereOrNull((b) => b.bidNumber != null);
-    final minBidNumber = lastBid?.bidNumber ?? 1;
+    final lastBidNumberOrDefault = lastBid?.bidNumber ?? 1;
+    final lastBidSuitOrDefault = lastBid?.suit;
 
     final cardsBySuit = groupBy(bot.cards, (card) => card.suit);
     final rankPoints = bot.cards
@@ -83,11 +101,6 @@ class HoneymoonBotAi {
       }
     });
 
-    // Don't bid if no trump suit
-    if (trumpSuit == null) {
-      return BidModel(bot, pass: true);
-    }
-
     // Determine the bid based on expected tricks and points
     var bidNumberViaExpectedTricks = (expectedTricks - 6);
     int bidNumberViaPoints;
@@ -111,24 +124,57 @@ class HoneymoonBotAi {
         bidNumberViaPoints = 0; // Or any other default value
     }
 
+    // Optimistically choose the best option
     var maxBidNumber =
-        ((bidNumberViaPoints + bidNumberViaExpectedTricks) / 2).ceil();
+        max(bidNumberViaPoints, bidNumberViaExpectedTricks.ceil());
 
-    // print("maxBidNumber: $maxBidNumber");
-    // print("trumpSuit: $trumpSuit");
-    // print("rankPoints: $rankPoints");
-    // print("suitPoints: $suitPoints");
-    // print("expectedTricks: $expectedTricks");
-    // print("minBidNumber: $minBidNumber");
+    // Need to bid one more if opponent suit better than bots
+    var minBidNumber = lastBidNumberOrDefault;
+    if (lastBidSuitOrDefault != null) {
+      if (CardModel.suitRank(trumpSuit!) < CardModel.suitRank(lastBidSuitOrDefault)) {
+        minBidNumber++;
+      }
+    }
 
-    if (trumpSuit == lastBid?.suit) {
+    print("======  BID     =========");
+    print("hand: ${bot.cards.join(",")}");
+    print("maxBidNumber: $maxBidNumber");
+    print("trumpSuit: $trumpSuit");
+    print("rankPoints: $rankPoints");
+    print("suitPoints: $suitPoints");
+    print("expectedTricks: $expectedTricks");
+    print("minBidNumber: $minBidNumber");
+    print("========================");
+
+    // For now, just pass if doubled
+    // TODO: Consider redouble
+    if (lastBid?.double == true) {
       return BidModel(bot, pass: true);
     }
 
-    if (maxBidNumber < minBidNumber) {
+    // Don't bid if no biddable suit
+    // TODO: Incorparate bidding NT
+    if (trumpSuit == null) {
       return BidModel(bot, pass: true);
     }
 
-    return BidModel(bot, suit: trumpSuit, bidNumber: maxBidNumber);
+    // If bot suit is same as opponent, double
+    if (trumpSuit == lastBidSuitOrDefault) {
+      if (lastBidNumberOrDefault > 2) {
+        return BidModel(bot, double: true);
+      }
+
+      return BidModel(bot, pass: true);
+    }
+
+    // Be aggressive if competing with opponent
+    if (maxBidNumber + 1 == minBidNumber) {
+      maxBidNumber++;
+    }
+    if (maxBidNumber >= minBidNumber) {
+      return BidModel(bot, suit: trumpSuit, bidNumber: maxBidNumber);
+    }
+
+    return BidModel(bot, pass: true);
   }
 }

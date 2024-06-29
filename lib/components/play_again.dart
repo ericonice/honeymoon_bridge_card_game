@@ -16,9 +16,9 @@ class PlayAgain extends StatelessWidget {
           onPressed: () async {
             model.newGame(players);
           },
-          child: const Text(
-            "Another Game?",
-            style: TextStyle(color: Colors.amber),
+          child: Text(
+            model.rubberIsOver ? "Another rubber?" : "Continue rubber?",
+            style: const TextStyle(color: Colors.amber),
           ),
         ),
       );

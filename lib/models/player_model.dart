@@ -9,19 +9,44 @@ class PlayerModel {
   CardModel? playedCard;
   ScoreModel score = ScoreModel();
 
-  PlayerModel({
-    required this.name,
-    this.cards = const [],
-    this.tricks = 0,
-    this.isHuman = false
-  });
+  PlayerModel(
+      {required this.name,
+      this.cards = const [],
+      this.tricks = 0,
+      this.isHuman = false});
 
   addCards(List<CardModel> newCards) {
     cards = [...cards, ...newCards];
     cards.sort((a, b) {
       int suitCompare = a.suit.index.compareTo(b.suit.index);
       if (suitCompare == 0) {
-        return b.rank.compareTo(a.rank); 
+        return b.rank.compareTo(a.rank);
+      }
+      return suitCompare;
+    });
+  }
+
+  sortCardsByTrump(Suit trump) {
+    // sort cards with trump first
+    List<Suit> suitOrder = [];
+    switch (trump) {
+      case Suit.Spades:
+      case Suit.NT:
+        suitOrder = [Suit.Spades, Suit.Hearts, Suit.Clubs, Suit.Diamonds];
+      case Suit.Hearts:
+        suitOrder = [Suit.Hearts, Suit.Spades, Suit.Diamonds, Suit.Clubs];
+      case Suit.Diamonds:
+        suitOrder = [Suit.Diamonds, Suit.Clubs, Suit.Hearts, Suit.Spades];
+      case Suit.Clubs:
+        suitOrder = [Suit.Clubs, Suit.Diamonds, Suit.Spades, Suit.Hearts];
+    }
+
+    cards.sort((a, b) {
+      int suitCompare =
+          suitOrder.indexOf(a.suit).compareTo(suitOrder.indexOf(b.suit));
+
+      if (suitCompare == 0) {
+        return b.rank.compareTo(a.rank);
       }
       return suitCompare;
     });
@@ -35,14 +60,12 @@ class PlayerModel {
     return !isHuman;
   }
 
-  void resetForNewGame({bool resetScore = false})
-  {
+  void resetForNewGame({bool resetScore = false}) {
     tricks = 0;
     playedCard = null;
-    if (resetScore)
-    {
+    cards = [];
+    if (resetScore) {
       score = ScoreModel();
     }
-
   }
 }

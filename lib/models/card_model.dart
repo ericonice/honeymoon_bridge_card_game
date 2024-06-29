@@ -136,4 +136,10 @@ class CardModel {
     }
   }
 
+    @override
+  String toString() {
+    return "$value${suitToUnicode(suit)}";
+  }
+
+
 }

@@ -113,6 +113,9 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
       // Otherwise, time to play
       gameState[gsPhase] = HoneymoonPhase.play;
+
+      // Order cards by trump suit
+      players[0].sortCardsByTrump(bidding!.contract()!.suit!);
     }
 
     await endTurn();
