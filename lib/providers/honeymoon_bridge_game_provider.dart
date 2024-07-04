@@ -43,6 +43,9 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
   BiddingModel? _bidding;
   BiddingModel? get bidding => _bidding;
 
+  late HoneymoonBotAi _botAi;
+  HoneymoonBotAi get botAi => _botAi;
+
   Future<void> newGame(List<PlayerModel> players) async {
     final deck = await _service.newDeck();
     _currentDeck = deck;
@@ -52,6 +55,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     _selectionCards = [];
     _bidding =
         BiddingModel(players: players, currentPlayer: players.first, bids: []);
+    _botAi = HoneymoonBotAi(_players[1]);
     setupBoard();
 
     notifyListeners();
@@ -113,6 +117,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
       // Otherwise, time to play
       gameState[gsPhase] = HoneymoonPhase.play;
+      _botAi.prepareForPlay(bidding!);
 
       // Order cards by trump suit
       players[0].sortCardsByTrump(bidding!.contract()!.suit!);
@@ -433,7 +438,6 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
     final phase = gameState[gsPhase];
     //await Future.delayed(defaultDelay);
     var bot = players[1];
-    var botAi = HoneymoonBotAi(bot);
 
     switch (phase) {
       case HoneymoonPhase.selection:
@@ -461,42 +465,7 @@ class HoneymoonBridgeGameProvider with ChangeNotifier {
 
       case HoneymoonPhase.play:
         {
-          // Determine if a card has already been played
-          CardModel? cardToPlay;
-          if (otherPlayer.playedCard != null) {
-            // Play consists of the following strategy (which is very, very unsophisticated):
-            // 1. If have any cards of the suit that was played, then:
-            //    Play the least card tha can beat the played card or lowest card if unable
-            //    to beat the played card.
-            // 2. Otherwise play the lowest trump, if any
-            // 3. Otherwise, play the lowest card
-            var suitPlayed = otherPlayer.playedCard!.suit;
-            var rank = otherPlayer.playedCard!.rank;
-            var suitContract = bidding!.contract()!.suit!;
-
-            // get possible cards of same suit, which will be ordered in descending order
-            var possibleCards = bot.cards.where((c) => c.suit == suitPlayed);
-            if (possibleCards.isNotEmpty) {
-              // Handle 1
-              cardToPlay = possibleCards.lastWhereOrNull((c) => c.rank > rank);
-              cardToPlay ??= possibleCards.lastWhere((c) => c.rank < rank);
-            } else {
-              if (suitContract != Suit.NT) {
-                // Handle 2
-                cardToPlay =
-                    bot.cards.lastWhereOrNull((c) => c.suit == suitContract);
-              }
-
-              // Handle 3
-              cardToPlay ??=
-                  players[1].cards.reduce((a, b) => a.rank < b.rank ? a : b);
-            }
-          } else {
-            // Bot kind of dumb, plays highest card
-            cardToPlay =
-                players[1].cards.reduce((a, b) => a.rank > b.rank ? a : b);
-          }
-
+          var cardToPlay = botAi.playCard(otherPlayer.playedCard);
           playCard(player: bot, card: cardToPlay);
 
           // Delay when robot plays card last, so that human player can

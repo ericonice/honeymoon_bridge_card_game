@@ -2,13 +2,160 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:honeymoon_bridge_game/models/bid_model.dart';
+import 'package:honeymoon_bridge_game/models/bidding_model.dart';
 import 'package:honeymoon_bridge_game/models/card_model.dart';
 import 'package:honeymoon_bridge_game/models/player_model.dart';
 
 class HoneymoonBotAi {
   final PlayerModel bot;
+  BidModel? contract;
+  List<CardModel> cardsSortedByStrength = [];
 
   HoneymoonBotAi(this.bot);
+
+  void prepareForPlay(BiddingModel bidding) {
+    contract = bidding.contract()!;
+
+    // Determine the quality of each of the suits
+    final cardsBySuit = groupBy(bot.cards, (card) => card.suit);
+    Map<Suit, int> suitStrength = {};
+    for (var entry in cardsBySuit.entries) {
+      final suit = entry.key;
+      final cards = entry.value;
+
+      // trump needs to be saved, so sort it last
+      if (contract!.player.isBot && contract!.suit! == suit) {
+        suitStrength[suit] = -20;
+        continue;
+      }
+
+      // strength of 5 or hight is considered a strong suit
+      if (cards.length > 1) {
+        int strength = 0;
+
+        if (cards[0].rank == 14 && cards[1].rank == 13) {
+          strength = 10;
+        } else if (cards[0].rank == 13 && cards[1].rank == 12) {
+          strength = 8;
+        } else if (cards[0].rank == 12 && cards[1].rank == 11) {
+          strength = 6;
+        }
+
+        if (strength > 0) {
+          strength += cards.length - 3;
+          suitStrength[suit] = strength;
+          continue;
+        }
+      }
+
+      // suit not strong but let's see if it's safe, in the sense it will
+      // not result in giving up a trick, like: K x x, or A Q x
+      int safety = 0;
+      if (cards[0].rank < 12) {
+        safety = 1;
+      } else if (cards[0].rank < 11) {
+        safety = 2;
+      } else if (cards.length == 1) {
+        safety = 1;
+      }
+      if (safety > 0) {
+        safety += max(min(2, cards.length) - 3, 0);
+        suitStrength[suit] = safety;
+        continue;
+      }
+
+      if (cards.length > 1) {
+        int scariness = 0;
+        if (cards[0].rank == 13) {
+          scariness = -4;
+        } else if (cards[0].rank == 12) {
+          scariness = -3;
+        } else if (cards[0].rank == 14 && cards[1].rank > 10) {
+          scariness = -2;
+        }
+        if (scariness < 0) {
+          scariness += max(2, cards.length - 3);
+          suitStrength[suit] = scariness;
+          continue;
+        }
+      }
+
+      suitStrength[suit] = 0;
+    }
+
+    final suitOrder = suitStrength.keys.toList()
+      ..sort((a, b) => suitStrength[b]!.compareTo(suitStrength[a]!));
+
+    cardsSortedByStrength = List.of(bot.cards)
+      ..sort((a, b) {
+        int suitCompare =
+            suitOrder.indexOf(a.suit).compareTo(suitOrder.indexOf(b.suit));
+
+        if (suitCompare == 0) {
+          return b.rank.compareTo(a.rank);
+        }
+        return suitCompare;
+      });
+  }
+
+  CardModel playCard(CardModel? playedCard) {
+    CardModel? cardToPlay;
+
+    if (playedCard != null) {
+      // Play consists of the following strategy (which is very, very unsophisticated):
+      // 1. If have any cards of the suit that was played, then:
+      //    Play the least card tha can beat the played card or lowest card if unable
+      //    to beat the played card.
+      // 2. Otherwise play the lowest trump, if any
+      // 3. Otherwise, play the lowest card
+      var suitPlayed = playedCard.suit;
+      var rank = playedCard.rank;
+
+      // get possible cards of same suit, which will be ordered in descending order
+      var possibleCards = bot.cards.where((c) => c.suit == suitPlayed);
+
+      // Handle 1
+      if (possibleCards.isNotEmpty) {
+        cardToPlay = possibleCards.lastWhereOrNull((c) => c.rank > rank);
+        cardToPlay ??= possibleCards.lastWhere((c) => c.rank < rank);
+      } else
+
+      // Handle 2
+      if (contract!.suit != Suit.NT) {
+        cardToPlay = bot.cards.lastWhereOrNull((c) => c.suit == contract!.suit);
+      }
+
+      // Handle 3
+      cardToPlay ??= bot.cards.reduce((a, b) => a.rank < b.rank ? a : b);
+    } else {
+      // Play the trump suit unless only 2 left
+      if (contract!.player.isBot &&
+          bot.cards.where((c) => c.suit == contract!.suit).length > 2) {
+        cardToPlay = bot.cards.firstWhere((c) => c.suit == contract!.suit);
+      } else {
+        // - otherwise, play *strong* suit
+        // - otherwise, play *safe* suit
+        // - otherwise, play *scary* suit
+        //
+        // to help with strong, safe and scary, suits have been associated
+        // with a strength.
+
+        // The work of determining the strength of the cards has already been
+        // done, so able to return the
+        cardToPlay = cardsSortedByStrength[0];
+      }
+    }
+
+    print("====== PLAY =========");
+    print("hand: ${bot.cards.join(",")}");
+    print("sorted hand: ${cardsSortedByStrength.join(",")}");
+    print("opponent card: $playedCard");
+    print("played card: $cardToPlay");
+    print("========================");
+
+    cardsSortedByStrength.remove(cardToPlay);
+    return cardToPlay;
+  }
 
   bool chooseCard(CardModel card) {
     var turnsRemaining = 12 - bot.cards.length;
@@ -130,10 +277,11 @@ class HoneymoonBotAi {
 
     // Need to bid one more if opponent suit better than bots
     var minBidNumber = lastBidNumberOrDefault;
-    if (lastBidSuitOrDefault != null) {
-      if (CardModel.suitRank(trumpSuit!) < CardModel.suitRank(lastBidSuitOrDefault)) {
-        minBidNumber++;
-      }
+    if (trumpSuit != null &&
+        lastBidSuitOrDefault != null &&
+        (CardModel.suitRank(trumpSuit!) <
+            CardModel.suitRank(lastBidSuitOrDefault))) {
+      minBidNumber++;
     }
 
     print("======  BID     =========");

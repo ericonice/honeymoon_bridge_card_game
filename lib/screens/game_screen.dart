@@ -5,7 +5,7 @@ import 'package:honeymoon_bridge_game/providers/honeymoon_bridge_game_provider.d
 import 'package:provider/provider.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({Key? key}) : super(key: key);
+  const GameScreen({super.key});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -24,7 +24,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Honeymoon Bridge"),
+        title: const Text("Honeymoon Bridge v0.2"),
         actions: [
           TextButton(
             onPressed: () async {
